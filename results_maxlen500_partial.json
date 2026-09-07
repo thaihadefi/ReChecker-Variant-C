@@ -1,0 +1,15 @@
+{
+  "baseline": {
+    "accuracy": 0.9940298507462687,
+    "precision_vulnerable": 0.9829059829059829,
+    "recall_vulnerable": 1.0,
+    "f1_vulnerable": 0.9913793103448276,
+    "f1_macro": 0.9934065501495828,
+    "roc_auc": 0.9999604743083004,
+    "pr_auc": 0.9998500749625185,
+    "eer": 0.0022727272727272726,
+    "false_positive_rate": 0.00909090909090909,
+    "false_negative_rate": 0.0,
+    "epochs_trained": 33
+  }
+}

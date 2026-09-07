@@ -1,0 +1,18 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary datasets and checkpoints generated during runs
+*.pkl
+*.h5
+*.model
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# OS specific files
+.DS_Store
+Thumbs.db
