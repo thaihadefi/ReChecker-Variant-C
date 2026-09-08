@@ -1,18 +1,103 @@
-# Byte-compiled / optimized / DLL files
+# Python bytecode and tool caches
 __pycache__/
 *.py[cod]
 *$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.pyo
+*.pyd
 
-# Temporary datasets and checkpoints generated during runs
-*.pkl
-*.h5
-*.model
-
+# Virtual environments and local configuration
 # Virtual environments
 .venv/
-env/
 venv/
+env/
+ENV/
+env.bak/
+venv.bak/
 
-# OS specific files
+# Environment variables and local configuration
+.env
+.env.*
+!.env.example
+
+# Packaging and build output
+# Packaging and build distribution
+build/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+*.egg
+*.manifest
+*.spec
+
+# Generated experiment output and temporary model files
+EXPERIMENT/
+# Testing, static analysis, and code coverage
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Machine learning frameworks: TensorFlow, Gensim, and Scikit-Learn
+*.h5
+*.weights.h5
+*.keras
+*.model
+*.model.*
+*.kv
+*.pkl
+*.tmp
+*.pickle
+checkpoints/
+
+# Logs and local notebooks
+# Generated experiment output and run directories
+EXPERIMENT/
+
+# Jupyter Notebooks and runtime logs
+.ipynb_checkpoints/
+*.log
+.ipynb_checkpoints/
+*.tmp
+
+# Editors and operating systems
+.idea/
+.vscode/
+# Operating system files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+
+# IDEs and code editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Documentation
+# Internal documentation and research reports
+Document/

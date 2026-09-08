@@ -1,83 +1,160 @@
-# Comparative Experiments: Baseline ReChecker vs. Variant C
+# ReChecker Variant C
 
-Code used to run the comparison experiments between the original ReChecker (Word2Vec + BiLSTM/Attention) and Variant C (FastText embeddings + a [SEP] boundary token + segment embeddings) for smart contract reentrancy detection. Results and analysis are in the report, not repeated here — this README only covers running the code.
+ReChecker Variant C is a deep learning pipeline for detecting reentrancy vulnerabilities in Solidity smart contract gadgets. It enhances the ReChecker baseline by incorporating a structure-aware input representation: FastText subword embeddings, an explicit `[SEP]` boundary marker, learned segment embeddings (W vs C regions), length-aware sequence budgeting, and leakage-safe cross-validation.
 
-Implemented with TensorFlow 2 / tf.keras and Gensim 4+.
+## Core Concepts
+
+A smart contract reentrancy gadget is split into two semantic regions:
+- **W-function ($W$)**: The target function containing external calls or suspected reentrancy points.
+- **C-function ($C$)**: Surrounding contract context (state variables, modifiers, auxiliary functions).
+
+### Representation & Architecture
+
+1. **FastText Embeddings**: Captures Solidity identifier subwords and out-of-vocabulary tokens.
+2. **`[SEP]` Boundary Token**: Explicitly marks the boundary: $W \oplus [\text{SEP}] \oplus C$.
+3. **Segment Embeddings**: Learned vectors indicating token region ($W$, $[\text{SEP}]$, $C$, $[\text{PAD}]$).
+4. **Length-Aware Budgeting**: Allocates dedicated token capacity to both $W$ and $C$ (e.g. 60% $W$, 40% $C$) instead of naive prefix truncation.
+5. **Masked BiLSTM + Additive Attention**: Masking ensures padding tokens never receive attention weights or distort recurrent states.
+6. **Leakage-Safe Evaluation**: `StratifiedGroupKFold` clustering by contract duplicates prevents data leakage across folds; embeddings are fitted strictly per-fold on training data.
 
 ---
 
-## 1. Environment Setup
+## Model & Experiment Configurations
+
+### Default Hyperparameters
+
+| Parameter | Default Value | Description |
+|---|---:|---|
+| `max_len` | `500` | Maximum input token sequence length |
+| `w_ratio` | `0.6` | Ratio of token budget allocated to W-function (~300 tokens) |
+| `vector_dim` | `300` | Token and segment embedding dimension |
+| `hidden_units` | `300` | BiLSTM hidden units |
+| `dense_units` | `300` | Classification head units |
+| `batch_size` | `32` | Training batch size |
+| `epochs` | `40` | Maximum epochs (early stopping patience: 5) |
+| `learning_rate` | `0.002` | Adam optimizer learning rate |
+| `folds` | `5` | Outer cross-validation folds (`StratifiedGroupKFold`) |
+| `validation_folds` | `5` | Inner validation folds for threshold tuning & early stopping |
+| `min_recall` | `0.95` | Target recall constraint for optimal decision threshold |
+
+### Ablation Variants
+
+| Variant | Alias | Embedding | `[SEP]` | Segment Embedding | Sequence Policy |
+|---|---|---|:---:|:---:|---|
+| `b0` | `baseline` | Word2Vec | No | No | Flat prefix truncation |
+| `b1` | - | FastText | No | No | Flat prefix truncation |
+| `b2` | - | FastText | Yes | No | Budgeted W/C prefix |
+| `b3` | `variant_c` | FastText | Yes | Yes | Budgeted W/C prefix |
+| `b4` | - | FastText | Yes | Yes | Budgeted W/C head-tail |
+
+---
+
+## Installation
+
+### 1. Setup Environment
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
----
+### 2. Verify Installation
 
-## 2. Dataset
-
-`reentrancy_1671.txt` (1,671 gadgets: 576 vulnerable, 1,095 non-vulnerable), taken from the original ReChecker repo, already included here.
-
----
-
-## 3. Running Experiments
-
-### Experiment 1: Single 80/20 Stratified Split (Report Section 3)
+Run the test suite to verify configuration, data loading, tokenization, and models:
 
 ```bash
-python build_dataset.py        # dataset.pkl (Baseline + Variant C)
-python build_dataset_raw.py    # dataset_raw.pkl (Baseline Raw)
-python run_experiment.py       # evaluates Baseline + Variant C
-python run_experiment_raw.py   # evaluates Baseline Raw
+python3 -m unittest discover -s tests -v
 ```
-
-Reproducibility note: `build_dataset.py`/`build_dataset_raw.py` fit Word2Vec/FastText with `workers=1` for reproducible vectors. The original numbers in Section 3 of the report were produced before this fix (`workers=3`, not exactly reproducible run-to-run) — re-running the commands above uses `workers=1` vectors, so results will be close to, but not bit-identical to, the report's numbers.
-
-### Experiment 2: 5-Fold Stratified Cross-Validation (Report Section 4)
-
-```bash
-python run_kfold.py
-```
-
-If this OOMs, run one fold per subprocess instead (same result, resumable):
-
-```bash
-bash run_kfold_driver.sh
-```
-
-### Experiment 3: StratifiedGroupKFold by 185 duplicate-structure contract clusters (Report Section 6)
-
-```bash
-bash run_kfold_group_driver.sh
-```
-
-### Experiment 4: max_len = 500 (mentioned as a limitation in Report Section 7, not a standalone results section)
-
-```bash
-python run_maxlen500.py
-python run_maxlen500_pc_only.py
-```
-
-Just a quick check on a single random split (not StratifiedGroupKFold) to see whether longer sequences cause training difficulty — not used to compare Baseline vs. Variant C, so the report doesn't quote specific numbers from this run.
 
 ---
 
-## 4. File Structure
+## Usage
 
-| File | Description |
-| --- | --- |
-| `reentrancy_1671.txt` | Original dataset, 1,671 gadgets |
-| `data_pipeline.py` | Gadget parsing, splits W-function/C-function |
-| `clean_fragment.py` | Normalizes identifiers to `VAR#`/`FUN#` |
-| `tokenize_common.py` | Solidity tokenizer, shared by both pipelines |
-| `models_common.py` | Model architectures (Attention, Baseline, Variant C) |
-| `build_dataset.py` / `build_dataset_raw.py` | Preprocessing for normalized / raw variants |
-| `run_experiment.py` / `run_experiment_raw.py` | Runs the single-split evaluation |
-| `run_kfold.py` | 5-Fold CV, single process |
-| `run_one_fold.py` + `run_kfold_driver.sh` | 5-Fold CV, one fold per process (avoids OOM) |
-| `run_one_fold_group.py` + `run_kfold_group_driver.sh` | StratifiedGroupKFold, one fold per process |
-| `summarize_kfold.py` | Aggregates `results_kfold*_partial.json` into mean ± std |
-| `run_maxlen500.py`, `run_maxlen500_pc_only.py` | max_len=500 experiment |
-| `requirements.txt` | Python dependencies |
+### Run Full Benchmark (All Variants & Folds)
+
+Launches process-isolated runs for variants `b0` through `b4` across all 5 folds:
+
+```bash
+./experiment.sh EXPERIMENT/b0-b4-benchmark
+```
+
+### Run a Single Variant (e.g. Variant C / `b3`)
+
+```bash
+./experiment.sh EXPERIMENT/b3-run --variant b3
+```
+
+### Quick Smoke Test
+
+Run a fast sanity check with reduced length, folds, and epochs:
+
+```bash
+./experiment.sh EXPERIMENT/smoke \
+  --variant b3 \
+  --folds 2 \
+  --validation-folds 2 \
+  --max-len 100 \
+  --epochs 1
+```
+
+### Run a Specific Fold
+
+Run fold 0 directly via Python CLI:
+
+```bash
+python3 main.py --run-dir EXPERIMENT/b3-fold-0 --fold 0 --variant b3
+```
+
+### Summarize Results
+
+Generate aggregate metrics and paired differences against baseline (`b0`):
+
+```bash
+# Full summary (requires all folds complete)
+python3 main.py --run-dir EXPERIMENT/b0-b4-benchmark --summarize --variant all
+
+# Partial summary during an ongoing run
+python3 main.py --run-dir EXPERIMENT/b3-run --summarize --variant b3 --allow-partial-summary
+```
+
+### Output Directory Structure
+
+Each run outputs to `EXPERIMENT/<run-name>/`:
+- `config.json`: Run configuration parameters
+- `dataset.json`: Dataset statistics and extraction diagnostics
+- `embeddings/`: Saved fold-specific Word2Vec/FastText models
+- `models/`: Trained model weights (`.weights.h5`)
+- `manifests/`: Reload manifests with decision thresholds
+- `results/`: Per-fold evaluation metrics and predictions
+- `summary.json`: Multi-fold summary and paired statistical comparisons
+
+---
+
+## Project Structure
+
+```text
+.
+├── Dataset/
+│   └── reentrancy_1671.txt     # Dataset of 1,671 labeled Solidity gadgets
+├── rechecker/                  # Core package
+│   ├── data/                   # Parsing, normalization, extraction, grouping
+│   ├── representation/         # Word2Vec/FastText embeddings, sequence policies
+│   ├── modeling/               # Masked BiLSTM and additive attention
+│   ├── experiments/            # Runner, splits, metrics, artifacts, reporting
+│   ├── config.py               # Experiment configuration dataclass
+│   └── cli.py                  # CLI orchestration
+├── tests/                      # Unit and regression test suite
+├── experiment.sh               # Memory-bounded shell runner
+├── main.py                     # CLI entry point
+├── requirements.txt            # Project dependencies
+├── .gitignore                  # Git ignore rules
+└── README.md                   # Project documentation
+```
+
+---
+
+## License
+
+Released under the MIT License for academic and research use.
