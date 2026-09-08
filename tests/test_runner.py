@@ -11,7 +11,6 @@ except ImportError:
     RUNTIME_AVAILABLE = False
 
 from config.config import ExperimentConfig
-from data import GadgetRecord
 from data.types import GadgetRecord
 from experiments.artifacts import FoldArtifactPaths, load_model_bundle
 from representation.variants import VARIANTS
@@ -20,9 +19,15 @@ from representation.variants import VARIANTS
 @unittest.skipUnless(RUNTIME_AVAILABLE, "TensorFlow and Gensim are required")
 class TinyFoldIntegrationTests(unittest.TestCase):
     def test_b3_fold_writes_a_reloadable_bundle(self):
+        # 12 records (not 8): with each record its own singleton group and
+        # label alternating by index, StratifiedGroupKFold on only 8 groups
+        # can place every label-1 group in one fold and every label-0 group
+        # in the other (verified: happens deterministically with this seed),
+        # leaving the fit partition with a single class. 12 groups gives the
+        # splitter enough room to keep both classes on both sides.
         train = [
             GadgetRecord(f"train-{index}", index % 2, (f"w{index}",), ("c",), f"g{index}")
-            for index in range(8)
+            for index in range(12)
         ]
         test = [
             GadgetRecord("test-0", 0, ("w0",), ("c",), "test-g0"),

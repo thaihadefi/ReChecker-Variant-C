@@ -4,7 +4,6 @@ from tempfile import TemporaryDirectory
 
 import numpy as np
 
-from data import GadgetRecord, load_records
 from data.loader import load_records
 from data.types import GadgetRecord
 from data.parser import parse_gadgets

@@ -1,7 +1,6 @@
 import unittest
 
 from config.config import ExperimentConfig
-from data import load_records
 from data.loader import load_records
 from experiments.splits import make_outer_splits, make_validation_split
 
