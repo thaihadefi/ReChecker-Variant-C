@@ -4,16 +4,18 @@ from tempfile import TemporaryDirectory
 
 import numpy as np
 
-from rechecker.data import GadgetRecord, load_records
-from rechecker.data.parser import parse_gadgets
-from rechecker.representation.sequences import (
+from data import GadgetRecord, load_records
+from data.loader import load_records
+from data.types import GadgetRecord
+from data.parser import parse_gadgets
+from representation.sequences import (
     C_SEGMENT,
     PAD_SEGMENT,
     SEP_SEGMENT,
     build_sequence,
     coverage,
 )
-from rechecker.representation.variants import VARIANTS
+from representation.variants import VARIANTS
 
 
 class SequencePolicyTests(unittest.TestCase):

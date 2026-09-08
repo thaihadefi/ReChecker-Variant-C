@@ -2,14 +2,14 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from rechecker.config import ExperimentConfig
-from rechecker.experiments.artifacts import (
+from config.config import ExperimentConfig
+from experiments.artifacts import (
     FoldArtifactPaths,
     read_json,
     write_bundle_manifest,
     write_json,
 )
-from rechecker.representation.variants import VARIANTS
+from representation.variants import VARIANTS
 
 
 class ArtifactTests(unittest.TestCase):

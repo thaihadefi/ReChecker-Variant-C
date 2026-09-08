@@ -1,6 +1,6 @@
 import unittest
 
-from rechecker.config import ExperimentConfig
+from config.config import ExperimentConfig
 
 
 class ConfigTests(unittest.TestCase):

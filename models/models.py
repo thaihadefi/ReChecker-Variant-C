@@ -6,8 +6,8 @@ import tensorflow as tf
 from tensorflow.keras import layers
 from tensorflow.keras.models import Model
 
-from rechecker.representation.sequences import PAD_SEGMENT
-from rechecker.representation.variants import VariantSpec
+from representation.sequences import PAD_SEGMENT
+from representation.variants import VariantSpec
 
 from .attention import MaskedAttention
 

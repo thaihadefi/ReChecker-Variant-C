@@ -10,10 +10,11 @@ try:
 except ImportError:
     RUNTIME_AVAILABLE = False
 
-from rechecker.config import ExperimentConfig
-from rechecker.data import GadgetRecord
-from rechecker.experiments.artifacts import FoldArtifactPaths, load_model_bundle
-from rechecker.representation.variants import VARIANTS
+from config.config import ExperimentConfig
+from data import GadgetRecord
+from data.types import GadgetRecord
+from experiments.artifacts import FoldArtifactPaths, load_model_bundle
+from representation.variants import VARIANTS
 
 
 @unittest.skipUnless(RUNTIME_AVAILABLE, "TensorFlow and Gensim are required")
@@ -38,13 +39,13 @@ class TinyFoldIntegrationTests(unittest.TestCase):
             validation_folds=2,
             verbose=0,
         )
-        from rechecker.experiments.runner import train_fold
+        from experiments.runner import train_fold
 
         with TemporaryDirectory() as directory:
             paths = FoldArtifactPaths(Path(directory), 0, "b3")
             result = train_fold(VARIANTS["b3"], train, test, config, paths)
             result.update({"fold": 0})
-            from rechecker.experiments.artifacts import write_json
+            from experiments.artifacts import write_json
 
             write_json(paths.result, result)
             self.assertTrue(paths.is_complete())

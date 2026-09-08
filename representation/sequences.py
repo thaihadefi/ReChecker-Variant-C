@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from rechecker.data.types import GadgetRecord
+from data.types import GadgetRecord
 
 from .variants import VariantSpec
 

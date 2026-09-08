@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 
-from rechecker.representation.variants import VariantSpec
+from representation.variants import VariantSpec
 
 from .artifacts import read_json, write_json
 

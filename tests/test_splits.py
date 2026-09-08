@@ -1,8 +1,9 @@
 import unittest
 
-from rechecker.config import ExperimentConfig
-from rechecker.data import load_records
-from rechecker.experiments.splits import make_outer_splits, make_validation_split
+from config.config import ExperimentConfig
+from data import load_records
+from data.loader import load_records
+from experiments.splits import make_outer_splits, make_validation_split
 
 
 class GroupSplitTests(unittest.TestCase):

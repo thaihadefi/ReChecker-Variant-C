@@ -7,8 +7,8 @@ from collections.abc import Sequence
 import numpy as np
 from sklearn.model_selection import StratifiedGroupKFold
 
-from rechecker.config import ExperimentConfig
-from rechecker.data.types import GadgetRecord
+from config.config import ExperimentConfig
+from data.types import GadgetRecord
 
 
 def _split(records: Sequence[GadgetRecord], folds: int, seed: int):

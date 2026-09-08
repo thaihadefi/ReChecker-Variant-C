@@ -14,8 +14,8 @@ from pathlib import Path
 
 import numpy as np
 
-from rechecker.config import ExperimentConfig
-from rechecker.representation.variants import VARIANTS, VariantSpec
+from config.config import ExperimentConfig
+from representation.variants import VARIANTS, VariantSpec
 
 
 def _json_value(value):
@@ -67,6 +67,10 @@ def artifact_bytes(path: str | Path) -> int:
 def source_fingerprint(root: str | Path = ".") -> str:
     base = Path(root)
     paths = sorted((base / "rechecker").rglob("*.py")) + [base / "main.py"]
+    source_dirs = ("config", "data", "models", "representation", "experiments")
+    paths = [base / "main.py"]
+    for folder in source_dirs:
+        paths.extend(sorted((base / folder).rglob("*.py")))
     digest = hashlib.sha256()
     for path in paths:
         if not path.is_file():
@@ -168,8 +172,8 @@ class LoadedModelBundle:
 
 
 def load_model_bundle(manifest_path: str | Path) -> LoadedModelBundle:
-    from rechecker.modeling.models import build_model
-    from rechecker.representation.embeddings import load_embedding
+    from models.models import build_model
+    from representation.embeddings import load_embedding
 
     manifest_path = Path(manifest_path)
     manifest = read_json(manifest_path)

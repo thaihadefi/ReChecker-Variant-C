@@ -2,13 +2,13 @@ import unittest
 
 import numpy as np
 
-from rechecker.config import ExperimentConfig
-from rechecker.representation.variants import VARIANTS
+from config.config import ExperimentConfig
+from representation.variants import VARIANTS
 
 try:
     import tensorflow as tf
 
-    from rechecker.modeling.models import build_model
+    from models.models import build_model
 except ImportError:
     tf = None
 

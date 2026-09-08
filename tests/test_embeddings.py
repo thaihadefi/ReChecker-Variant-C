@@ -7,7 +7,7 @@ import numpy as np
 try:
     import gensim  # noqa: F401
 
-    from rechecker.representation.embeddings import (
+    from representation.embeddings import (
         fit_embedding,
         load_embedding,
         save_embedding,

@@ -145,6 +145,32 @@ Each run outputs to `EXPERIMENT/<run-name>/`:
 │   ├── experiments/            # Runner, splits, metrics, artifacts, reporting
 │   ├── config.py               # Experiment configuration dataclass
 │   └── cli.py                  # CLI orchestration
+├── config/
+│   └── config.py               # Validated ExperimentConfig dataclass & CLI helpers
+├── data/                       # Parsing, normalization, extraction, and loader
+│   ├── extraction.py
+│   ├── grouping.py
+│   ├── loader.py
+│   ├── normalization.py
+│   ├── parser.py
+│   ├── tokenizer.py
+│   └── types.py
+├── models/                     # Model architectures & attention
+│   ├── attention.py
+│   ├── inspection.py
+│   └── models.py
+├── representation/             # Word2Vec/FastText embeddings & sequence policies
+│   ├── embeddings.py
+│   ├── sequences.py
+│   ├── variants.py
+│   └── vectorization.py
+├── experiments/                # Training runner, splits, metrics, artifacts, reporting
+│   ├── artifacts.py
+│   ├── metrics.py
+│   ├── reporting.py
+│   ├── reproducibility.py
+│   ├── runner.py
+│   └── splits.py
 ├── tests/                      # Unit and regression test suite
 ├── experiment.sh               # Memory-bounded shell runner
 ├── main.py                     # CLI entry point

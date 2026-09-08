@@ -11,17 +11,17 @@ from collections.abc import Sequence
 import numpy as np
 from sklearn.utils.class_weight import compute_class_weight
 
-from rechecker.config import ExperimentConfig
-from rechecker.data.types import GadgetRecord
-from rechecker.modeling.inspection import count_parameters
-from rechecker.representation.embeddings import fit_embedding, save_embedding
-from rechecker.representation.sequences import (
+from config.config import ExperimentConfig
+from data.types import GadgetRecord
+from models.inspection import count_parameters
+from representation.embeddings import fit_embedding, save_embedding
+from representation.sequences import (
     build_sequence,
     coverage,
     embedding_tokens,
 )
-from rechecker.representation.variants import VariantSpec
-from rechecker.representation.vectorization import vectorize_examples
+from representation.variants import VariantSpec
+from representation.vectorization import vectorize_examples
 
 from .artifacts import FoldArtifactPaths, artifact_bytes, write_bundle_manifest
 from .metrics import benchmark_predict, evaluate_predictions, select_recall_threshold
@@ -73,7 +73,7 @@ def train_fold(
     from tensorflow.keras.callbacks import EarlyStopping
     from tensorflow.keras.utils import to_categorical
 
-    from rechecker.modeling.models import build_model
+    from models.models import build_model
 
     set_seed(config.seed)
     fit_indices, validation_indices = make_validation_split(train_records, config)

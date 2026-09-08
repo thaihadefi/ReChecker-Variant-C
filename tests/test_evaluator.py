@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from rechecker.experiments.metrics import evaluate_predictions, select_recall_threshold
+from experiments.metrics import evaluate_predictions, select_recall_threshold
 
 
 class EvaluatorTests(unittest.TestCase):

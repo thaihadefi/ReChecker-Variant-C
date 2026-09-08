@@ -2,10 +2,10 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from rechecker.config import ExperimentConfig
-from rechecker.experiments.artifacts import write_json
-from rechecker.experiments.reporting import summarize_run
-from rechecker.representation.variants import VARIANTS
+from config.config import ExperimentConfig
+from experiments.artifacts import write_json
+from experiments.reporting import summarize_run
+from representation.variants import VARIANTS
 
 
 class ReportingTests(unittest.TestCase):
