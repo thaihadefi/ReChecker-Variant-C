@@ -2,7 +2,12 @@ import unittest
 
 import numpy as np
 
-from experiments.metrics import evaluate_predictions, select_recall_threshold
+from experiments.metrics import (
+    evaluate_predictions,
+    recompute_metrics,
+    select_eer_threshold,
+    select_recall_threshold,
+)
 
 
 class EvaluatorTests(unittest.TestCase):
@@ -12,6 +17,47 @@ class EvaluatorTests(unittest.TestCase):
         threshold = select_recall_threshold(labels, probabilities, min_recall=0.8)
         self.assertEqual(threshold, 0.6)
         self.assertGreaterEqual(np.mean(probabilities[:5] >= threshold), 0.8)
+
+    def test_eer_threshold_balances_false_positive_and_negative_rates(self):
+        labels = np.array([1, 1, 1, 1, 0, 0, 0, 0])
+        probabilities = np.array([0.9, 0.8, 0.6, 0.3, 0.7, 0.4, 0.2, 0.1])
+        threshold = select_eer_threshold(labels, probabilities)
+        self.assertEqual(threshold, 0.6)
+        metrics = evaluate_predictions(labels, probabilities, threshold)
+        self.assertEqual(metrics["false_positive_rate"], metrics["false_negative_rate"])
+
+    def test_eer_threshold_falls_back_to_half_for_single_class(self):
+        threshold = select_eer_threshold(np.array([1, 1, 1]), np.array([0.9, 0.5, 0.2]))
+        self.assertEqual(threshold, 0.5)
+
+    def test_recompute_metrics_rescoring_matches_direct_call(self):
+        result = {
+            "validation_predictions": [
+                {"label": 1, "probability": 0.9},
+                {"label": 1, "probability": 0.8},
+                {"label": 1, "probability": 0.6},
+                {"label": 1, "probability": 0.3},
+                {"label": 0, "probability": 0.7},
+                {"label": 0, "probability": 0.4},
+                {"label": 0, "probability": 0.2},
+                {"label": 0, "probability": 0.1},
+            ],
+            "predictions": [
+                {"label": 1, "probability": 0.85},
+                {"label": 0, "probability": 0.15},
+            ],
+        }
+        recomputed = recompute_metrics(result, "eer")
+        expected_threshold = select_eer_threshold(
+            [item["label"] for item in result["validation_predictions"]],
+            [item["probability"] for item in result["validation_predictions"]],
+        )
+        expected = evaluate_predictions(
+            [item["label"] for item in result["predictions"]],
+            [item["probability"] for item in result["predictions"]],
+            expected_threshold,
+        )
+        self.assertEqual(recomputed, expected)
 
     def test_confusion_matrix_is_stable_when_a_class_is_not_predicted(self):
         metrics = evaluate_predictions(

@@ -30,7 +30,7 @@ def _compile(model: Model, learning_rate: float) -> Model:
     model.compile(
         optimizer=tf.keras.optimizers.Adamax(learning_rate=learning_rate),
         loss="categorical_crossentropy",
-        metrics=["accuracy"],
+        metrics=["accuracy", tf.keras.metrics.AUC(curve="PR", name="pr_auc")],
     )
     return model
 

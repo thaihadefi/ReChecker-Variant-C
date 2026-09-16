@@ -25,6 +25,8 @@ class ExperimentConfig:
     validation_folds: int = 5
     w_ratio: float = 0.6
     min_recall: float = 0.95
+    threshold_strategy: str = "recall"
+    early_stop_monitor: str = "val_pr_auc"
     seed: int = 42
     verbose: int = 2
 
@@ -47,6 +49,12 @@ class ExperimentConfig:
             raise ValueError("fold counts must be at least 2")
         if not 0.0 < self.min_recall <= 1.0:
             raise ValueError("min_recall must be in (0, 1]")
+        if self.threshold_strategy not in ("recall", "eer"):
+            raise ValueError("threshold_strategy must be 'recall' or 'eer'")
+        if self.early_stop_monitor not in ("val_loss", "val_accuracy", "val_pr_auc"):
+            raise ValueError(
+                "early_stop_monitor must be one of val_loss, val_accuracy, val_pr_auc"
+            )
         if self.verbose not in (0, 1, 2):
             raise ValueError("verbose must be 0, 1, or 2")
 
@@ -96,6 +104,8 @@ class ExperimentConfig:
             "--validation-folds", str(self.validation_folds),
             "--w-ratio", str(self.w_ratio),
             "--min-recall", str(self.min_recall),
+            "--threshold-strategy", self.threshold_strategy,
+            "--early-stop-monitor", self.early_stop_monitor,
             "--seed", str(self.seed),
             "--verbose", str(self.verbose),
         ]

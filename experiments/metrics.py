@@ -45,16 +45,28 @@ def select_recall_threshold(y_true, probabilities, min_recall: float) -> float:
     return float(np.sort(positives)[rank])
 
 
-def _eer(labels: np.ndarray, scores: np.ndarray) -> float:
-    if len(np.unique(labels)) < 2:
-        return float("nan")
-    false_positive_rate, true_positive_rate, _ = roc_curve(labels, scores)
+def _eer_operating_point(labels: np.ndarray, scores: np.ndarray):
+    false_positive_rate, true_positive_rate, thresholds = roc_curve(labels, scores)
     index = int(
         np.nanargmin(np.abs((1.0 - true_positive_rate) - false_positive_rate))
     )
-    return float(
-        (false_positive_rate[index] + 1.0 - true_positive_rate[index]) / 2.0
-    )
+    return false_positive_rate[index], true_positive_rate[index], thresholds[index]
+
+
+def _eer(labels: np.ndarray, scores: np.ndarray) -> float:
+    if len(np.unique(labels)) < 2:
+        return float("nan")
+    false_positive_rate, true_positive_rate, _ = _eer_operating_point(labels, scores)
+    return float((false_positive_rate + 1.0 - true_positive_rate) / 2.0)
+
+
+def select_eer_threshold(y_true, probabilities) -> float:
+    """Pick the validation threshold at the equal-error-rate operating point."""
+    labels, scores = _validated_arrays(y_true, probabilities)
+    if len(np.unique(labels)) < 2:
+        return 0.5
+    _, _, threshold = _eer_operating_point(labels, scores)
+    return float(threshold)
 
 
 def evaluate_predictions(y_true, probabilities, threshold: float) -> dict[str, object]:
@@ -82,6 +94,25 @@ def evaluate_predictions(y_true, probabilities, threshold: float) -> dict[str, o
         "false_negative_rate": float(fn / (fn + tp)) if fn + tp else float("nan"),
         "confusion_matrix": {"tn": int(tn), "fp": int(fp), "fn": int(fn), "tp": int(tp)},
     }
+
+
+def recompute_metrics(
+    result: dict[str, object], threshold_strategy: str, min_recall: float = 0.95
+) -> dict[str, object]:
+    """Re-score a fold's already-persisted probabilities under a different
+    threshold_strategy, with no retraining or re-embedding required."""
+    validation = result["validation_predictions"]
+    test = result["predictions"]
+    validation_y = [item["label"] for item in validation]
+    validation_probability = [item["probability"] for item in validation]
+    test_y = [item["label"] for item in test]
+    test_probability = [item["probability"] for item in test]
+
+    if threshold_strategy == "eer":
+        threshold = select_eer_threshold(validation_y, validation_probability)
+    else:
+        threshold = select_recall_threshold(validation_y, validation_probability, min_recall)
+    return evaluate_predictions(test_y, test_probability, threshold)
 
 
 def benchmark_predict(predict: Callable[[], np.ndarray], sample_count: int):

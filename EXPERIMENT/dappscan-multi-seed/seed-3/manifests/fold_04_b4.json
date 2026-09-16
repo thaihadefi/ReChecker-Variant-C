@@ -1,0 +1,41 @@
+{
+  "config": {
+    "batch_size": 32,
+    "c_budget": 200,
+    "data_file": "Dataset/dappscan_reentrancy.txt",
+    "dense_units": 300,
+    "dropout": 0.2,
+    "early_stop_monitor": "val_pr_auc",
+    "epochs": 40,
+    "folds": 5,
+    "hidden_units": 300,
+    "learning_rate": 0.002,
+    "max_len": 500,
+    "min_recall": 0.95,
+    "output_root": "EXPERIMENT",
+    "patience": 5,
+    "seed": 3,
+    "threshold_strategy": "recall",
+    "validation_folds": 5,
+    "vector_dim": 300,
+    "verbose": 0,
+    "w_budget": 299,
+    "w_ratio": 0.6
+  },
+  "embedding": "embeddings/fold_04_b4.model",
+  "embedding_kind": "fasttext",
+  "fold": 3,
+  "schema_version": 1,
+  "segment_ids": {
+    "C": 1,
+    "PAD": 3,
+    "SEP": 2,
+    "W": 0
+  },
+  "sequence_policy": "region-head-tail",
+  "threshold": 0.31224435567855835,
+  "uses_segment_embedding": true,
+  "uses_separator": true,
+  "variant": "b4",
+  "weights": "models/fold_04_b4.weights.h5"
+}

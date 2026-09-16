@@ -17,6 +17,14 @@ class ConfigTests(unittest.TestCase):
         original = ExperimentConfig(max_len=100, batch_size=8)
         self.assertEqual(ExperimentConfig.from_dict(original.to_dict()), original)
 
+    def test_invalid_threshold_strategy_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "threshold_strategy"):
+            ExperimentConfig(threshold_strategy="max_f1")
+
+    def test_invalid_early_stop_monitor_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "early_stop_monitor"):
+            ExperimentConfig(early_stop_monitor="val_f1")
+
 
 if __name__ == "__main__":
     unittest.main()

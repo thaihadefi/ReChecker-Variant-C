@@ -1,0 +1,868 @@
+{
+  "best_validation_loss": 0.6203655004501343,
+  "coverage": {
+    "c_coverage": 0.9852941176470589,
+    "c_retention": 0.3188252760877677,
+    "sep_coverage": 1.0,
+    "token_retention": 0.3586404868844098,
+    "w_retention": 0.9975081699346404
+  },
+  "epochs_trained": 18,
+  "fold": 3,
+  "metrics": {
+    "accuracy": 0.3088235294117647,
+    "confusion_matrix": {
+      "fn": 2,
+      "fp": 45,
+      "tn": 3,
+      "tp": 18
+    },
+    "eer": 0.5,
+    "f1_macro": 0.27347124346442375,
+    "f1_vulnerable": 0.43373493975903615,
+    "false_negative_rate": 0.1,
+    "false_positive_rate": 0.9375,
+    "pr_auc": 0.355012616264728,
+    "precision_vulnerable": 0.2857142857142857,
+    "recall_vulnerable": 0.9,
+    "roc_auc": 0.5260416666666667,
+    "threshold": 0.06640493124723434
+  },
+  "model": {
+    "non_trainable_parameters": 0,
+    "total_parameters": 1984502,
+    "trainable_parameters": 1984502
+  },
+  "outer_test_size": 68,
+  "outer_train_size": 274,
+  "performance": {
+    "embedding_bytes": 123764041,
+    "embedding_fit_seconds": 7.792713874999999,
+    "inference": {
+      "milliseconds_per_sample": 17.12144301470593,
+      "samples_per_second": 58.406291989587615,
+      "seconds": 1.1642581250000035
+    },
+    "model_training_seconds": 196.29545095900002,
+    "peak_rss_mb": 2113.15625,
+    "weights_bytes": 23863408
+  },
+  "predictions": [
+    {
+      "group_id": "44eacee8d9938879",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.7713620662689209,
+      "sample_id": "7 IdleCDO.sol"
+    },
+    {
+      "group_id": "58dbcc03e11c72a5",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.4493909776210785,
+      "sample_id": "9 LPGauge.sol"
+    },
+    {
+      "group_id": "fdd7377ec44ed10b",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.7450956702232361,
+      "sample_id": "11 BorrowerOperations.sol"
+    },
+    {
+      "group_id": "750af49872099ec8",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.7141299843788147,
+      "sample_id": "14 IDO.sol"
+    },
+    {
+      "group_id": "248532478851ee04",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.1377294659614563,
+      "sample_id": "21 StakingProxyUniV3.sol"
+    },
+    {
+      "group_id": "cd714ed564d6d276",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.11092589795589447,
+      "sample_id": "22 LCToken.sol"
+    },
+    {
+      "group_id": "0aa9cefcda45a167",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.8563242554664612,
+      "sample_id": "38 UniswapV3.sol"
+    },
+    {
+      "group_id": "c036570495d4e2cf",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.13769611716270447,
+      "sample_id": "47 MiniDOGE.sol"
+    },
+    {
+      "group_id": "f16efbb51dd33f0e",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.27401408553123474,
+      "sample_id": "51 EternalHeroesFactory.sol"
+    },
+    {
+      "group_id": "740a6faf36493902",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.8688120245933533,
+      "sample_id": "52 MasterChef.sol"
+    },
+    {
+      "group_id": "8c94e380324ce7d4",
+      "label": 1,
+      "prediction": 0,
+      "probability": 0.03925742208957672,
+      "sample_id": "61 MarketOracle.sol"
+    },
+    {
+      "group_id": "e2397b44c47daaa7",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.5879409313201904,
+      "sample_id": "67 MasterMilker.sol"
+    },
+    {
+      "group_id": "990bd247a3976027",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.1767113208770752,
+      "sample_id": "81 TransactionManager.sol"
+    },
+    {
+      "group_id": "61791414654257e3",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.3194299638271332,
+      "sample_id": "87 MainWorkflow.sol"
+    },
+    {
+      "group_id": "1ab9e182004c8010",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.5427011847496033,
+      "sample_id": "91 RobotLiabilityLib.sol"
+    },
+    {
+      "group_id": "3f80d01db41f4b6d",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.14938846230506897,
+      "sample_id": "98 yWETH.sol"
+    },
+    {
+      "group_id": "8707c9d70320a12f",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.21021832525730133,
+      "sample_id": "100 ve.sol"
+    },
+    {
+      "group_id": "4ef521b6d2902a09",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.3574650287628174,
+      "sample_id": "104 ProfitSplitter.sol"
+    },
+    {
+      "group_id": "03b1fe5b69424d24",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.15019744634628296,
+      "sample_id": "108 Amp.sol"
+    },
+    {
+      "group_id": "80c2d239f6546187",
+      "label": 1,
+      "prediction": 0,
+      "probability": 0.046153053641319275,
+      "sample_id": "114 bVault.sol"
+    },
+    {
+      "group_id": "7d79ce491c5f6a1a",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.06650800257921219,
+      "sample_id": "115 MutiRewardPool.sol"
+    },
+    {
+      "group_id": "55cfc794bb9fdfbc",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.2695890963077545,
+      "sample_id": "116 FidoMeta.sol"
+    },
+    {
+      "group_id": "ffd1f6f0edac33e8",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.41974344849586487,
+      "sample_id": "127 YieldFarm.sol"
+    },
+    {
+      "group_id": "d6355bda4411425e",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.8930361270904541,
+      "sample_id": "128 TokenVesting.sol"
+    },
+    {
+      "group_id": "0b93414d38a92acc",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.5877195596694946,
+      "sample_id": "132 CurveAMO.sol"
+    },
+    {
+      "group_id": "3e59d1df16ef2ee6",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.5142353773117065,
+      "sample_id": "138 StrategyWardenLP.sol"
+    },
+    {
+      "group_id": "1764c78e3485f2d4",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.0808766782283783,
+      "sample_id": "146 StrategyCommonChefLP.sol"
+    },
+    {
+      "group_id": "2f8f4cb075e6e6ac",
+      "label": 0,
+      "prediction": 0,
+      "probability": 0.03473961353302002,
+      "sample_id": "148 PausableToken.sol"
+    },
+    {
+      "group_id": "20aef4009f863e97",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.31278300285339355,
+      "sample_id": "151 AgregateDepositaryBalanceView.sol"
+    },
+    {
+      "group_id": "7b34989a1b977d0e",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.4190898537635803,
+      "sample_id": "154 Vault.sol"
+    },
+    {
+      "group_id": "89a25e3124abe521",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.20631848275661469,
+      "sample_id": "158 CryptoGamez.sol"
+    },
+    {
+      "group_id": "2cb4ec49d092d62a",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.2180657684803009,
+      "sample_id": "175 MetaWaferse.sol"
+    },
+    {
+      "group_id": "b9a37df75f895892",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.17461013793945312,
+      "sample_id": "178 GolemNetworkTokenBatching.sol"
+    },
+    {
+      "group_id": "132cedd2d8d19e8f",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.41458454728126526,
+      "sample_id": "180 PLCRVoting.sol"
+    },
+    {
+      "group_id": "50f0729d8e61e324",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.5466412305831909,
+      "sample_id": "189 Summon.sol"
+    },
+    {
+      "group_id": "ecc2ee1a1b0ea6e8",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.13932505249977112,
+      "sample_id": "193 DODODrops.sol"
+    },
+    {
+      "group_id": "b18c450efcb3aba8",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.7145434021949768,
+      "sample_id": "198 Crowdsale.sol"
+    },
+    {
+      "group_id": "062006d2215386fe",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.8713042736053467,
+      "sample_id": "200 NodeRegistry.sol"
+    },
+    {
+      "group_id": "52c0399dea410605",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.5448665618896484,
+      "sample_id": "206 claimToken.sol"
+    },
+    {
+      "group_id": "bc3e7cae89a8f4ec",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.13462699949741364,
+      "sample_id": "208 SMAOracle.sol"
+    },
+    {
+      "group_id": "9e0b1383cccaae52",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.06861044466495514,
+      "sample_id": "211 vDSGToken.sol"
+    },
+    {
+      "group_id": "9079ebbc11ad4dda",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.5214235782623291,
+      "sample_id": "219 LatticeStakingPool0x74299A718b2c44483a27325d7725F0B2646DE3B1.sol"
+    },
+    {
+      "group_id": "f1faeaa34d7d4f6b",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.11700206995010376,
+      "sample_id": "221 AssetProxyOwner.sol"
+    },
+    {
+      "group_id": "d0d77f54400702ec",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.580281674861908,
+      "sample_id": "226 FeePool.sol"
+    },
+    {
+      "group_id": "58be300371ee78e8",
+      "label": 0,
+      "prediction": 0,
+      "probability": 0.05476131662726402,
+      "sample_id": "227 BEP20Token.sol"
+    },
+    {
+      "group_id": "6164d7883bd98d60",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.07529643177986145,
+      "sample_id": "231 HoldefiSettings.sol"
+    },
+    {
+      "group_id": "4c3e412aa76b0be8",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.5524684190750122,
+      "sample_id": "239 SwapHelper.sol"
+    },
+    {
+      "group_id": "435c4a1f50a3eb31",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.20638924837112427,
+      "sample_id": "248 MonstaPresale.sol"
+    },
+    {
+      "group_id": "a0ca30f667bbf91b",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.2649644911289215,
+      "sample_id": "250 BSCSCAN-0xC512261b8AE70260447A74aC7d94dAee150B90C0.sol"
+    },
+    {
+      "group_id": "c2d729ec47a0c29b",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.5980514883995056,
+      "sample_id": "258 GNTPaymentChannels.sol"
+    },
+    {
+      "group_id": "69321cafe9761ec6",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.5232712626457214,
+      "sample_id": "262 FujiVault.sol"
+    },
+    {
+      "group_id": "e9d520535f0d5a5c",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.687619149684906,
+      "sample_id": "266 USR.sol"
+    },
+    {
+      "group_id": "e1485b8822ff6a6e",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.16149836778640747,
+      "sample_id": "269 StakingRewardsFactory.sol"
+    },
+    {
+      "group_id": "c7232e7df9781647",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.11710243672132492,
+      "sample_id": "272 Investment.sol"
+    },
+    {
+      "group_id": "a0ca30f667bbf91b",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.2649644911289215,
+      "sample_id": "274 code.sol"
+    },
+    {
+      "group_id": "370a5e61a892cb67",
+      "label": 0,
+      "prediction": 0,
+      "probability": 0.0332331657409668,
+      "sample_id": "276 DProxy.sol"
+    },
+    {
+      "group_id": "47ec928b367c41ee",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.8359974026679993,
+      "sample_id": "278 Poll.sol"
+    },
+    {
+      "group_id": "3947348eade868a2",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.5187075138092041,
+      "sample_id": "292 FinToken.sol"
+    },
+    {
+      "group_id": "a63ffccfa1b40a23",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.7012493014335632,
+      "sample_id": "304 OUSD.sol"
+    },
+    {
+      "group_id": "ca8c7a8df1520b65",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.11710243672132492,
+      "sample_id": "310 Investment.sol"
+    },
+    {
+      "group_id": "333061ca4891fb40",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.6474515795707703,
+      "sample_id": "313 Livepeer.sol"
+    },
+    {
+      "group_id": "c44a4974e50eecb3",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.4022541046142578,
+      "sample_id": "315 COX.sol"
+    },
+    {
+      "group_id": "fab497de920a07a0",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.6599627733230591,
+      "sample_id": "319 StakefishServicesContract.sol"
+    },
+    {
+      "group_id": "6c41685da3771aef",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.17575274407863617,
+      "sample_id": "321 ApeVault.sol"
+    },
+    {
+      "group_id": "ade663c6cd91063c",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.6726596355438232,
+      "sample_id": "326 crv-locker.sol"
+    },
+    {
+      "group_id": "a8ef2f2d9c35f9a8",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.09112545847892761,
+      "sample_id": "330 ChainlinkPriceFeed.sol"
+    },
+    {
+      "group_id": "916b2c4e8e2d30bd",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.09772267192602158,
+      "sample_id": "334 REAL.sol"
+    },
+    {
+      "group_id": "6a143fa04acf32ac",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.1665971428155899,
+      "sample_id": "340 Voting.sol"
+    }
+  ],
+  "schema_version": 1,
+  "sizes": {
+    "fit": 219,
+    "test": 68,
+    "validation": 55
+  },
+  "validation_predictions": [
+    {
+      "group_id": "e18fc2ac3cd1cd72",
+      "label": 1,
+      "probability": 0.07413322478532791,
+      "sample_id": "13 acyc.sol"
+    },
+    {
+      "group_id": "0192326dfe1102b1",
+      "label": 1,
+      "probability": 0.08995168656110764,
+      "sample_id": "15 StakingV2.sol"
+    },
+    {
+      "group_id": "891d2f247c3cb15b",
+      "label": 1,
+      "probability": 0.7330588698387146,
+      "sample_id": "20 StakefishERC721Wrapper.sol"
+    },
+    {
+      "group_id": "b1ccc180e26962fb",
+      "label": 1,
+      "probability": 0.06640493124723434,
+      "sample_id": "24 SpaceMonkey.sol"
+    },
+    {
+      "group_id": "6fba753fb7d05ed6",
+      "label": 1,
+      "probability": 0.8955779671669006,
+      "sample_id": "30 MasterChef.sol"
+    },
+    {
+      "group_id": "a888f7b592e9ba77",
+      "label": 1,
+      "probability": 0.7849512100219727,
+      "sample_id": "34 LendingPool.sol"
+    },
+    {
+      "group_id": "2289cb30dfe4fc95",
+      "label": 1,
+      "probability": 0.6976813077926636,
+      "sample_id": "36 WETHGateway.sol"
+    },
+    {
+      "group_id": "740ca6efbfd95499",
+      "label": 1,
+      "probability": 0.6627157926559448,
+      "sample_id": "39 UniswapV2.sol"
+    },
+    {
+      "group_id": "344866728e1ad378",
+      "label": 1,
+      "probability": 0.6672327518463135,
+      "sample_id": "41 PoolService.sol"
+    },
+    {
+      "group_id": "5d395c70cce5648b",
+      "label": 1,
+      "probability": 0.1093587875366211,
+      "sample_id": "44 Holdefi.sol"
+    },
+    {
+      "group_id": "ac9750228bdedc9e",
+      "label": 1,
+      "probability": 0.6859474778175354,
+      "sample_id": "48 BufferBNBOptions.sol"
+    },
+    {
+      "group_id": "405f9fc8b1e4eb1c",
+      "label": 1,
+      "probability": 0.47341588139533997,
+      "sample_id": "59 ReferralFeeReceiver.sol"
+    },
+    {
+      "group_id": "8de35712ee47ace3",
+      "label": 1,
+      "probability": 0.1265854686498642,
+      "sample_id": "70 yToken.sol"
+    },
+    {
+      "group_id": "4b78ed7e8cecffbe",
+      "label": 1,
+      "probability": 0.3691215515136719,
+      "sample_id": "71 LimitOrderProtocol.sol"
+    },
+    {
+      "group_id": "4a2073b1758f2d0e",
+      "label": 1,
+      "probability": 0.7754892706871033,
+      "sample_id": "76 ARCToken.sol"
+    },
+    {
+      "group_id": "99a9174555112988",
+      "label": 1,
+      "probability": 0.7242308259010315,
+      "sample_id": "79 LPool.sol"
+    },
+    {
+      "group_id": "c8a189643104cb72",
+      "label": 1,
+      "probability": 0.20048972964286804,
+      "sample_id": "83 HegicPool.sol"
+    },
+    {
+      "group_id": "dba6ad7084e86b1c",
+      "label": 1,
+      "probability": 0.24874533712863922,
+      "sample_id": "85 Comptroller.sol"
+    },
+    {
+      "group_id": "04a3c2776ecb4d69",
+      "label": 1,
+      "probability": 0.8405307531356812,
+      "sample_id": "93 LockableERC777.sol"
+    },
+    {
+      "group_id": "112934e8e1fc094f",
+      "label": 1,
+      "probability": 0.7754892706871033,
+      "sample_id": "99 contract.sol"
+    },
+    {
+      "group_id": "544b10bfabdc07d2",
+      "label": 1,
+      "probability": 0.06502766162157059,
+      "sample_id": "101 BsktEthLPPool.sol"
+    },
+    {
+      "group_id": "fe22c7dfe26e03a4",
+      "label": 1,
+      "probability": 0.172954723238945,
+      "sample_id": "109 YVaultAssetProxy.sol"
+    },
+    {
+      "group_id": "c5cf991925464493",
+      "label": 0,
+      "probability": 0.12008416652679443,
+      "sample_id": "134 NativeEtherWrapper.sol"
+    },
+    {
+      "group_id": "616968cc8fd06c98",
+      "label": 0,
+      "probability": 0.3401656746864319,
+      "sample_id": "136 wallet.sol"
+    },
+    {
+      "group_id": "4e9915c13d712687",
+      "label": 0,
+      "probability": 0.04668561741709709,
+      "sample_id": "139 Ownable.sol"
+    },
+    {
+      "group_id": "6b28435690345360",
+      "label": 0,
+      "probability": 0.0318962000310421,
+      "sample_id": "141 Migrations.sol"
+    },
+    {
+      "group_id": "8bc47c7931868bfc",
+      "label": 0,
+      "probability": 0.028315864503383636,
+      "sample_id": "150 ERC677.sol"
+    },
+    {
+      "group_id": "bfc42533da6d7950",
+      "label": 0,
+      "probability": 0.02601078525185585,
+      "sample_id": "157 DefaultFinalizeAgent.sol"
+    },
+    {
+      "group_id": "ecc879b8730eef06",
+      "label": 0,
+      "probability": 0.034535959362983704,
+      "sample_id": "167 Balancer.sol"
+    },
+    {
+      "group_id": "09db563abe2f2cc6",
+      "label": 0,
+      "probability": 0.0657261312007904,
+      "sample_id": "182 ERC721Enumerable.sol"
+    },
+    {
+      "group_id": "448049d4a27c5114",
+      "label": 0,
+      "probability": 0.6573023200035095,
+      "sample_id": "187 InitializableERC20.sol"
+    },
+    {
+      "group_id": "7de0bc551ec12cea",
+      "label": 0,
+      "probability": 0.48861995339393616,
+      "sample_id": "190 FixedRateSwap.sol"
+    },
+    {
+      "group_id": "78c156e41e376293",
+      "label": 0,
+      "probability": 0.6079961657524109,
+      "sample_id": "196 CompoundStrategy.sol"
+    },
+    {
+      "group_id": "267e1e848a132997",
+      "label": 0,
+      "probability": 0.13739776611328125,
+      "sample_id": "207 DistributionManager.sol"
+    },
+    {
+      "group_id": "19dece64105ac52a",
+      "label": 0,
+      "probability": 0.5820627212524414,
+      "sample_id": "230 Solos.sol"
+    },
+    {
+      "group_id": "cd5bccd0931a8704",
+      "label": 0,
+      "probability": 0.7031002640724182,
+      "sample_id": "232 aq.sol"
+    },
+    {
+      "group_id": "bc429cad9d5e40a3",
+      "label": 0,
+      "probability": 0.1386101394891739,
+      "sample_id": "236 SOAR.sol"
+    },
+    {
+      "group_id": "f7fb6405b52a00b6",
+      "label": 0,
+      "probability": 0.08261317759752274,
+      "sample_id": "240 RevomonToken.sol"
+    },
+    {
+      "group_id": "1f7f46d84e61df5f",
+      "label": 0,
+      "probability": 0.13791249692440033,
+      "sample_id": "246 LenderPool.sol"
+    },
+    {
+      "group_id": "016310b1d48853cb",
+      "label": 0,
+      "probability": 0.6590040922164917,
+      "sample_id": "249 WOWSale.sol"
+    },
+    {
+      "group_id": "570c5b6c8a62d5bf",
+      "label": 0,
+      "probability": 0.7821439504623413,
+      "sample_id": "253 MixinMatchOrders.sol"
+    },
+    {
+      "group_id": "8028fc925bad4e44",
+      "label": 0,
+      "probability": 0.14606212079524994,
+      "sample_id": "259 xTRIBE.sol"
+    },
+    {
+      "group_id": "9f5b9c83f74d5399",
+      "label": 0,
+      "probability": 0.18328911066055298,
+      "sample_id": "260 ERC20Gauges.sol"
+    },
+    {
+      "group_id": "51083d532f113528",
+      "label": 0,
+      "probability": 0.08110954612493515,
+      "sample_id": "261 PrimitiveEngine.sol"
+    },
+    {
+      "group_id": "a4fd8b134fbcc93a",
+      "label": 0,
+      "probability": 0.12297796458005905,
+      "sample_id": "282 AMOCoinSale.sol"
+    },
+    {
+      "group_id": "c2bed411a1da5396",
+      "label": 0,
+      "probability": 0.2518240809440613,
+      "sample_id": "290 kickico_token_v1.sol"
+    },
+    {
+      "group_id": "f90e93e9702270cb",
+      "label": 0,
+      "probability": 0.12537428736686707,
+      "sample_id": "291 incognito_proxy.sol"
+    },
+    {
+      "group_id": "38c79653278ad736",
+      "label": 0,
+      "probability": 0.09994953870773315,
+      "sample_id": "295 CrazyToken.sol"
+    },
+    {
+      "group_id": "3bbcb39e6b7f9a30",
+      "label": 0,
+      "probability": 0.7548502683639526,
+      "sample_id": "296 ERC20.sol"
+    },
+    {
+      "group_id": "653b2e1da2b96306",
+      "label": 0,
+      "probability": 0.1404818445444107,
+      "sample_id": "305 BNum.sol"
+    },
+    {
+      "group_id": "92db7970ecba5d5d",
+      "label": 0,
+      "probability": 0.7248494625091553,
+      "sample_id": "306 OKLGRaffle.sol"
+    },
+    {
+      "group_id": "2ea04968c025a126",
+      "label": 0,
+      "probability": 0.08954587578773499,
+      "sample_id": "307 code.sol"
+    },
+    {
+      "group_id": "cf0948ccc991d73a",
+      "label": 0,
+      "probability": 0.18189771473407745,
+      "sample_id": "337 Roots.sol"
+    },
+    {
+      "group_id": "e974131c2c924f92",
+      "label": 0,
+      "probability": 0.6847304701805115,
+      "sample_id": "338 bbi.sol"
+    },
+    {
+      "group_id": "6b28435690345360",
+      "label": 0,
+      "probability": 0.031896188855171204,
+      "sample_id": "341 Migrations.sol"
+    }
+  ],
+  "variant": "b2",
+  "variant_description": "FastText plus [SEP] without segment embedding"
+}

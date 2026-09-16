@@ -125,3 +125,40 @@ def summarize_run(
 
     write_json(run_dir / "summary.json", summary)
     return summary
+
+
+def summarize_multi_seed(
+    run_dir: str | Path,
+    seeds: list[int],
+    expected_variants: tuple[VariantSpec, ...],
+    allow_partial: bool = False,
+) -> dict[str, object]:
+    """Aggregate per-seed summaries (each already averaged over its folds)."""
+    run_dir = Path(run_dir)
+    requested = {spec.name for spec in expected_variants}
+    per_seed = {
+        seed: summarize_run(run_dir / f"seed-{seed}", expected_variants, allow_partial=allow_partial)
+        for seed in seeds
+    }
+
+    summary: dict[str, object] = {
+        "seeds": list(seeds),
+        "complete": all(item["complete"] for item in per_seed.values()),
+    }
+    for variant in sorted(requested):
+        variant_summaries = [item[variant] for item in per_seed.values() if variant in item]
+        if not variant_summaries:
+            continue
+        metric_names = set(variant_summaries[0])
+        for item in variant_summaries[1:]:
+            metric_names &= set(item)
+        summary[variant] = {
+            name: {
+                "mean": float(np.mean([item[name]["mean"] for item in variant_summaries])),
+                "std": float(np.std([item[name]["mean"] for item in variant_summaries])),
+            }
+            for name in sorted(metric_names)
+        }
+
+    write_json(run_dir / "multi_seed_summary.json", summary)
+    return summary

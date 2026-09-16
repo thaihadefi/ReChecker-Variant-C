@@ -4,7 +4,7 @@ from tempfile import TemporaryDirectory
 
 from config.config import ExperimentConfig
 from experiments.artifacts import write_json
-from experiments.reporting import summarize_run
+from experiments.reporting import summarize_multi_seed, summarize_run
 from representation.variants import VARIANTS
 
 
@@ -54,6 +54,20 @@ class ReportingTests(unittest.TestCase):
             self.assertAlmostEqual(
                 summary["paired_b3_minus_b0"]["accuracy"]["mean"], 0.1
             )
+
+    def test_multi_seed_summary_aggregates_per_seed_means(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            for seed, accuracies in ((1, (0.7, 0.8)), (2, (0.9, 1.0))):
+                run_dir = root / f"seed-{seed}"
+                write_json(run_dir / "config.json", ExperimentConfig(folds=2).to_dict())
+                for fold, accuracy in enumerate(accuracies):
+                    self._result(run_dir, "b0", fold, accuracy)
+            summary = summarize_multi_seed(root, [1, 2], (VARIANTS["b0"],))
+            self.assertTrue(summary["complete"])
+            # seed 1 mean = 0.75, seed 2 mean = 0.95 -> aggregate mean 0.85
+            self.assertAlmostEqual(summary["b0"]["accuracy"]["mean"], 0.85)
+            self.assertAlmostEqual(summary["b0"]["accuracy"]["std"], 0.1)
 
     def test_paired_summary_rejects_different_test_samples(self):
         with TemporaryDirectory() as directory:

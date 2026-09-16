@@ -31,11 +31,14 @@ A smart contract reentrancy gadget is split into two semantic regions:
 | `hidden_units` | `300` | BiLSTM hidden units |
 | `dense_units` | `300` | Classification head units |
 | `batch_size` | `32` | Training batch size |
-| `epochs` | `40` | Maximum epochs (early stopping patience: 5) |
+| `epochs` | `40` | Maximum epochs |
+| `patience` | `5` | Early-stopping patience (epochs without improvement on `early_stop_monitor`) |
 | `learning_rate` | `0.002` | Adam optimizer learning rate |
 | `folds` | `5` | Outer cross-validation folds (`StratifiedGroupKFold`) |
 | `validation_folds` | `5` | Inner validation folds for threshold tuning & early stopping |
-| `min_recall` | `0.95` | Target recall constraint for optimal decision threshold |
+| `min_recall` | `0.95` | Target recall constraint when `threshold_strategy=recall` |
+| `threshold_strategy` | `recall` | Decision threshold selection: `recall` (hits `min_recall`) or `eer` (equal-error-rate operating point) |
+| `early_stop_monitor` | `val_pr_auc` | Early-stopping metric: `val_loss`, `val_accuracy`, or `val_pr_auc` (recommended for imbalanced data) |
 
 ### Ablation Variants
 
@@ -46,6 +49,25 @@ A smart contract reentrancy gadget is split into two semantic regions:
 | `b2` | - | FastText | Yes | No | Budgeted W/C prefix |
 | `b3` | `variant_c` | FastText | Yes | Yes | Budgeted W/C prefix |
 | `b4` | - | FastText | Yes | Yes | Budgeted W/C head-tail |
+
+---
+
+## Alternate Dataset: DAppSCAN
+
+`Dataset/reentrancy_1671.txt` is extracted from 185 contracts total. To test generalization on
+an independent, group-disjoint corpus, `data/build_dappscan_dataset.py` converts audit findings
+from [InPlusLab/DAppSCAN](https://github.com/InPlusLab/DAppSCAN) (real audit-report-derived SWC-107
+labels) into the same gadget format:
+
+```bash
+git clone --depth 1 https://github.com/InPlusLab/DAppSCAN.git /path/to/DAppSCAN
+python3 -m data.build_dappscan_dataset \
+  --dappscan-root /path/to/DAppSCAN \
+  --output Dataset/dappscan_reentrancy.txt \
+  --neg-ratio 2.0
+```
+
+Then point any run at it with `--data-file Dataset/dappscan_reentrancy.txt`.
 
 ---
 
@@ -107,6 +129,28 @@ Run fold 0 directly via Python CLI:
 python3 main.py --run-dir EXPERIMENT/b3-fold-0 --fold 0 --variant b3
 ```
 
+### Threshold Strategy & Early Stopping
+
+```bash
+# Equal-error-rate threshold instead of the recall-constrained default
+python3 main.py --run-dir EXPERIMENT/b3-eer --variant b3 --threshold-strategy eer
+
+# Early-stop on validation loss instead of PR-AUC
+python3 main.py --run-dir EXPERIMENT/b3-valloss --variant b3 --early-stop-monitor val_loss
+```
+
+### Multi-Seed Runs
+
+Run and aggregate the same benchmark across several seeds to check result stability instead of relying on a single seed:
+
+```bash
+# Train all listed seeds, then aggregate mean/std per variant into multi_seed_summary.json
+python3 main.py --run-all --seeds 1,2,3,4 --run-dir EXPERIMENT/multi-seed --variant all
+
+# Re-aggregate an existing multi-seed run (e.g. after adding more seed subdirectories) without retraining
+python3 main.py --summarize --seeds 1,2,3,4 --run-dir EXPERIMENT/multi-seed --variant all
+```
+
 ### Summarize Results
 
 Generate aggregate metrics and paired differences against baseline (`b0`):
@@ -137,14 +181,8 @@ Each run outputs to `EXPERIMENT/<run-name>/`:
 ```text
 .
 ├── Dataset/
-│   └── reentrancy_1671.txt     # Dataset of 1,671 labeled Solidity gadgets
-├── rechecker/                  # Core package
-│   ├── data/                   # Parsing, normalization, extraction, grouping
-│   ├── representation/         # Word2Vec/FastText embeddings, sequence policies
-│   ├── modeling/               # Masked BiLSTM and additive attention
-│   ├── experiments/            # Runner, splits, metrics, artifacts, reporting
-│   ├── config.py               # Experiment configuration dataclass
-│   └── cli.py                  # CLI orchestration
+│   ├── reentrancy_1671.txt              # Dataset of 1,671 labeled Solidity gadgets
+│   └── dappscan_reentrancy.txt          # Optional: DAppSCAN-derived reentrancy gadgets (see below)
 ├── config/
 │   └── config.py               # Validated ExperimentConfig dataclass & CLI helpers
 ├── data/                       # Parsing, normalization, extraction, and loader
@@ -154,7 +192,8 @@ Each run outputs to `EXPERIMENT/<run-name>/`:
 │   ├── normalization.py
 │   ├── parser.py
 │   ├── tokenizer.py
-│   └── types.py
+│   ├── types.py
+│   └── build_dappscan_dataset.py  # Converts DAppSCAN audit data into the gadget format
 ├── models/                     # Model architectures & attention
 │   ├── attention.py
 │   ├── inspection.py
@@ -178,9 +217,3 @@ Each run outputs to `EXPERIMENT/<run-name>/`:
 ├── .gitignore                  # Git ignore rules
 └── README.md                   # Project documentation
 ```
-
----
-
-## License
-
-Released under the MIT License for academic and research use.

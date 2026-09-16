@@ -6,6 +6,7 @@ import argparse
 import json
 import subprocess
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 from config.config import ExperimentConfig
@@ -38,7 +39,20 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--validation-folds", type=int, default=5)
     parser.add_argument("--w-ratio", type=float, default=0.6)
     parser.add_argument("--min-recall", type=float, default=0.95)
+    parser.add_argument(
+        "--threshold-strategy", choices=("recall", "eer"), default="recall"
+    )
+    parser.add_argument(
+        "--early-stop-monitor",
+        choices=("val_loss", "val_accuracy", "val_pr_auc"),
+        default="val_pr_auc",
+    )
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument(
+        "--seeds",
+        type=str,
+        help="comma-separated seeds to run/aggregate together, e.g. 1,2,3,4,5",
+    )
     parser.add_argument("--verbose", type=int, choices=(0, 1, 2), default=2)
     return parser
 
@@ -60,9 +74,18 @@ def _config(args: argparse.Namespace) -> ExperimentConfig:
         validation_folds=args.validation_folds,
         w_ratio=args.w_ratio,
         min_recall=args.min_recall,
+        threshold_strategy=args.threshold_strategy,
+        early_stop_monitor=args.early_stop_monitor,
         seed=args.seed,
         verbose=args.verbose,
     )
+
+
+def _parse_seeds(raw: str) -> list[int]:
+    seeds = [int(item) for item in raw.split(",") if item.strip()]
+    if not seeds:
+        raise SystemExit("--seeds must list at least one seed")
+    return seeds
 
 
 def _initialize_run(
@@ -162,6 +185,11 @@ def _run_all(args: argparse.Namespace, config: ExperimentConfig, run_dir: Path) 
     print(json.dumps(summary, indent=2))
 
 
+def _run_multi_seed(args: argparse.Namespace, config: ExperimentConfig, run_dir: Path, seeds: list[int]) -> None:
+    for seed in seeds:
+        _run_all(args, replace(config, seed=seed), run_dir / f"seed-{seed}")
+
+
 def main() -> None:
     args = _parser().parse_args()
     if args.run_all and args.summarize:
@@ -169,6 +197,23 @@ def main() -> None:
     config = _config(args)
     run_dir = args.run_dir or config.new_run_dir()
     specs = resolve_variants(args.variant)
+
+    if args.seeds:
+        from experiments.reporting import summarize_multi_seed
+
+        seeds = _parse_seeds(args.seeds)
+        if args.run_dir is None:
+            raise SystemExit("--seeds requires --run-dir")
+        if not args.summarize:
+            if not args.run_all:
+                raise SystemExit("--seeds requires --run-all or --summarize")
+            _run_multi_seed(args, config, run_dir, seeds)
+        summary = summarize_multi_seed(
+            run_dir, seeds, specs, allow_partial=args.allow_partial_summary
+        )
+        print(json.dumps(summary, indent=2))
+        return
+
     if args.summarize:
         from experiments.reporting import summarize_run
 

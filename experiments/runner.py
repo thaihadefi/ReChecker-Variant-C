@@ -24,7 +24,12 @@ from representation.variants import VariantSpec
 from representation.vectorization import vectorize_examples
 
 from .artifacts import FoldArtifactPaths, artifact_bytes, write_bundle_manifest
-from .metrics import benchmark_predict, evaluate_predictions, select_recall_threshold
+from .metrics import (
+    benchmark_predict,
+    evaluate_predictions,
+    select_eer_threshold,
+    select_recall_threshold,
+)
 from .reproducibility import set_seed
 from .splits import assert_group_disjoint, make_validation_split
 
@@ -117,7 +122,8 @@ def train_fold(
         batch_size=config.batch_size,
         epochs=config.epochs,
         callbacks=[EarlyStopping(
-            monitor="val_loss",
+            monitor=config.early_stop_monitor,
+            mode="min" if config.early_stop_monitor == "val_loss" else "max",
             patience=config.patience,
             restore_best_weights=True,
         )],
@@ -128,9 +134,12 @@ def train_fold(
     validation_probability = model.predict(
         validation_x, batch_size=config.batch_size, verbose=0
     )[:, 1]
-    threshold = select_recall_threshold(
-        validation_y, validation_probability, config.min_recall
-    )
+    if config.threshold_strategy == "eer":
+        threshold = select_eer_threshold(validation_y, validation_probability)
+    else:
+        threshold = select_recall_threshold(
+            validation_y, validation_probability, config.min_recall
+        )
     test_probability, inference = benchmark_predict(
         lambda: model.predict(
             test_x, batch_size=config.batch_size, verbose=0
@@ -174,6 +183,17 @@ def train_fold(
                 "prediction": int(probability >= threshold),
             }
             for record, probability in zip(test_records, test_probability)
+        ],
+        # Kept so an alternate threshold_strategy can be re-scored later
+        # (metrics.recompute_metrics) without retraining or re-embedding.
+        "validation_predictions": [
+            {
+                "sample_id": record.sample_id,
+                "group_id": record.group_id,
+                "label": record.label,
+                "probability": float(probability),
+            }
+            for record, probability in zip(validation_records, validation_probability)
         ],
     }
     del model, fit_x, validation_x, test_x
