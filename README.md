@@ -163,6 +163,24 @@ python3 main.py --run-dir EXPERIMENT/b0-b4-benchmark --summarize --variant all
 python3 main.py --run-dir EXPERIMENT/b3-run --summarize --variant b3 --allow-partial-summary
 ```
 
+### Cross-Dataset Validation (1671 → DAppSCAN)
+
+To evaluate true out-of-distribution generalization, train on `Dataset/reentrancy_1671.txt` and evaluate zero-shot on audit findings from DAppSCAN (`Dataset/dappscan_reentrancy.txt` and `Dataset/dappscan_reentrancy_ratio1.txt`):
+
+```bash
+# Run 5-seed cross-dataset evaluation for Variant C (b3) and Baseline (b0)
+PYTHONPATH=. python3 -u experiments/run_cross_dataset.py --variants b3,b0 --seeds 42,1,2,3,4
+```
+
+Results are saved to `EXPERIMENT/cross-dataset/cross_dataset_results.json`:
+
+| Test Set | Variant | PR-AUC | F1 | Recall | Precision | EER |
+|---|---|---|---|---|---|---|
+| **DAppSCAN 2:1** (342 samples) | **`b3` (Variant C)** | **37.52% ± 2.57%** | **49.26% ± 0.82%** | **94.21% ± 5.48%** | 33.38% ± 0.38% | **47.24% ± 1.60%** |
+| | `b0` (Baseline) | 33.35% ± 0.86% | 45.35% ± 5.71% | 78.60% ± 24.40% | 33.94% ± 2.30% | 53.42% ± 1.17% |
+| **DAppSCAN 1:1** (228 samples) | **`b3` (Variant C)** | **53.55% ± 2.72%** | **65.20% ± 1.55%** | **94.21% ± 5.48%** | 49.91% ± 0.66% | **48.16% ± 2.28%** |
+| | `b0` (Baseline) | 50.31% ± 1.75% | 58.97% ± 9.82% | 78.60% ± 24.40% | 50.57% ± 2.52% | 53.33% ± 1.51% |
+
 ### Output Directory Structure
 
 Each run outputs to `EXPERIMENT/<run-name>/`:
@@ -182,7 +200,8 @@ Each run outputs to `EXPERIMENT/<run-name>/`:
 .
 ├── Dataset/
 │   ├── reentrancy_1671.txt              # Dataset of 1,671 labeled Solidity gadgets
-│   └── dappscan_reentrancy.txt          # Optional: DAppSCAN-derived reentrancy gadgets (see below)
+│   ├── dappscan_reentrancy.txt          # DAppSCAN reentrancy gadgets (2:1 ratio, 342 samples)
+│   └── dappscan_reentrancy_ratio1.txt   # DAppSCAN reentrancy gadgets (1:1 ratio, 228 samples)
 ├── config/
 │   └── config.py               # Validated ExperimentConfig dataclass & CLI helpers
 ├── data/                       # Parsing, normalization, extraction, and loader
@@ -208,6 +227,7 @@ Each run outputs to `EXPERIMENT/<run-name>/`:
 │   ├── metrics.py
 │   ├── reporting.py
 │   ├── reproducibility.py
+│   ├── run_cross_dataset.py    # Zero-shot cross-dataset evaluation (1671 -> DAppSCAN)
 │   ├── runner.py
 │   └── splits.py
 ├── tests/                      # Unit and regression test suite
