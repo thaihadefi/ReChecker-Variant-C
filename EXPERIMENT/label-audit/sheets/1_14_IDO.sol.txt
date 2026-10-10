@@ -1,0 +1,67 @@
+# 14 IDO.sol label=1
+# DAppSCAN-source/contracts/Hacken-Ground Zero/code/IDO.sol
+
+--- L58-L82 ---
+   58      function participate(uint256 amountToSpent, IERC20 token) external {
+   59          uint256[2] memory rate = rates[token];
+   60          uint256 amountToClaim = ((amountToSpent * rate[0]) / rate[1]);
+   61  
+   62          require(idoStatus, "The IDO is not started!");
+   63          require(block.timestamp < idoFinish, "The IDO is already finished!");
+   64          require(pool[msg.sender].start == 0, "You're already participating in IDO");
+   65          require(token.balanceOf(msg.sender) >= amountToSpent, "You don't have enough money!");
+   66          require(whitelist[msg.sender].maxAmountToClaim >= amountToClaim, "You're not permited to claim this amount!");
+   67          require(whitelist[msg.sender].isWhitelisted, "You're not whitelisted");
+   68  
+   69          require(allowedTokens[token], "This token is not allowed to participate");
+   70  
+   71          token.transferFrom(msg.sender, address(this), amountToSpent);
+   72  
+   73          pool[msg.sender] = IDOParticipant({
+   74              start: block.timestamp,
+   75              amountToClaim: amountToClaim,
+   76              claimedLastTime: 0,
+   77              claimedAmount: 0,
+   78              hasClaimed: false
+   79          });
+   80  
+   81          emit NewIDOParticipant(token, msg.sender, amountToSpent);
+   82      }
+
+--- L86-L110 ---
+   86      function claim() external {
+   87          require(block.timestamp > idoFinish, "The IDO is not finished yet");
+   88          require(pool[msg.sender].start != 0, "You're not participating in IDO");
+   89          require(
+   90              (block.timestamp - pool[msg.sender].claimedLastTime) > cooldownToClaim,
+   91              "You are not allowed to claime more at this time"
+   92          );
+   93          require(!pool[msg.sender].hasClaimed, "You already claimed");
+   94  
+   95          if (
+   96              (pool[msg.sender].claimedAmount < pool[msg.sender].amountToClaim) &&
+   97              ((pool[msg.sender].amountToClaim - pool[msg.sender].claimedAmount) >= allowedAmountToClaim)
+   98          ) {
+   99                                                         
+  100              GZT.transfer(msg.sender, allowedAmountToClaim);
+  101              pool[msg.sender].claimedLastTime = block.timestamp;
+  102          } else if (
+  103              (pool[msg.sender].claimedAmount < pool[msg.sender].amountToClaim) &&
+  104              ((pool[msg.sender].amountToClaim - pool[msg.sender].claimedAmount) < allowedAmountToClaim)
+  105          ) {
+  106              GZT.transfer(msg.sender, (pool[msg.sender].amountToClaim - pool[msg.sender].claimedAmount));
+  107              pool[msg.sender].claimedLastTime = block.timestamp;
+  108              pool[msg.sender].hasClaimed = true;
+  109          }
+  110      }
+
+--- L90-L90 ---
+   90              (block.timestamp - pool[msg.sender].claimedLastTime) > cooldownToClaim,
+
+--- L149-L154 ---
+  149      function claimTheInvestments(IERC20 token, uint256 amount) external onlyOwner {
+  150          require(block.timestamp > idoFinish, "The IDO is not finished yet");
+  151  
+  152                                                  
+  153          token.transfer(msg.sender, amount);
+  154      }

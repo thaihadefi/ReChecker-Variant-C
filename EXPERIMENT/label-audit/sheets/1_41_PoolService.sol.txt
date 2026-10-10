@@ -1,0 +1,121 @@
+# 41 PoolService.sol label=1
+# DAppSCAN-source/contracts/QuillAudits-GearBox Protocol-GearBox Protocol/gearbox-contracts-0ac33ba87212ce056ac6b6357ad74161d417158a/contracts/pool/PoolService.sol
+
+--- L134-L162 ---
+  134      function addLiquidity(
+  135          uint256 amount,
+  136          address onBehalfOf,
+  137          uint256 referralCode
+  138      )
+  139          external
+  140          override
+  141          whenNotPaused            
+  142          nonReentrant
+  143      {
+  144                                                         
+  145          require(
+  146              expectedLiquidity() + amount <= expectedLiquidityLimit,
+  147              Errors.POOL_MORE_THAN_EXPECTED_LIQUIDITY_LIMIT
+  148          );             
+  149  
+  150          IERC20(underlyingToken).safeTransferFrom(
+  151              msg.sender,
+  152              address(this),
+  153              amount
+  154          );               
+  155  
+  156          DieselToken(dieselToken).mint(onBehalfOf, toDiesel(amount));               
+  157  
+  158          _expectedLiquidityLU = _expectedLiquidityLU.add(amount);               
+  159          _updateBorrowRate();               
+  160  
+  161          emit AddLiquidity(msg.sender, onBehalfOf, amount, referralCode);               
+  162      }
+
+--- L176-L202 ---
+  176      function removeLiquidity(uint256 amount, address to)
+  177          external
+  178          override
+  179          whenNotPaused            
+  180          nonReentrant
+  181          returns (uint256)
+  182      {
+  183          uint256 underlyingTokensAmount = fromDiesel(amount);               
+  184  
+  185          uint256 amountSent = underlyingTokensAmount.percentMul(
+  186              withdrawMultiplier
+  187          );
+  188  
+  189          IERC20(underlyingToken).safeTransfer(to, amountSent);                
+  190          IERC20(underlyingToken).safeTransfer(
+  191              treasuryAddress,
+  192              underlyingTokensAmount.percentMul(withdrawFee)
+  193          );                
+  194          DieselToken(dieselToken).burn(msg.sender, amount);               
+  195  
+  196          _expectedLiquidityLU = _expectedLiquidityLU.sub(underlyingTokensAmount);               
+  197          _updateBorrowRate();               
+  198  
+  199          emit RemoveLiquidity(msg.sender, to, amount);               
+  200  
+  201          return amountSent;
+  202      }
+
+--- L225-L227 ---
+  225      function availableLiquidity() public view override returns (uint256) {
+  226          return IERC20(underlyingToken).balanceOf(address(this));
+  227      }
+
+--- L239-L259 ---
+  239      function lendCreditAccount(uint256 borrowedAmount, address creditAccount)
+  240          external
+  241          override
+  242          whenNotPaused            
+  243      {
+  244          require(
+  245              creditManagersCanBorrow[msg.sender],
+  246              Errors.POOL_CREDIT_MANAGERS_ONLY
+  247          );                 
+  248  
+  249                                             
+  250          IERC20(underlyingToken).safeTransfer(creditAccount, borrowedAmount);             
+  251  
+  252                               
+  253          _updateBorrowRate();             
+  254  
+  255                                           
+  256          totalBorrowed = totalBorrowed.add(borrowedAmount);             
+  257  
+  258          emit Borrow(msg.sender, creditAccount, borrowedAmount);             
+  259      }
+
+--- L240-L240 ---
+  240          external
+
+--- L395-L399 ---
+  395      function getDieselRate_RAY() public view override returns (uint256) {
+  396          uint256 dieselSupply = IERC20(dieselToken).totalSupply();
+  397          if (dieselSupply == 0) return WadRayMath.RAY;            
+  398          return expectedLiquidity().rayDiv(dieselSupply);            
+  399      }
+
+--- L419-L437 ---
+  419      function connectCreditManager(address _creditManager)
+  420          external
+  421          configuratorOnly            
+  422      {
+  423          require(
+  424              address(this) == ICreditManager(_creditManager).poolService(),
+  425              Errors.POOL_INCOMPATIBLE_CREDIT_ACCOUNT_MANAGER
+  426          );             
+  427  
+  428          require(
+  429              !creditManagersCanRepay[_creditManager],
+  430              Errors.POOL_CANT_ADD_CREDIT_MANAGER_TWICE
+  431          );             
+  432  
+  433          creditManagersCanBorrow[_creditManager] = true;             
+  434          creditManagersCanRepay[_creditManager] = true;             
+  435          creditManagers.push(_creditManager);             
+  436          emit NewCreditManagerConnected(_creditManager);             
+  437      }

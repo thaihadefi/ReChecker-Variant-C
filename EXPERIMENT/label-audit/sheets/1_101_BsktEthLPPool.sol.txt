@@ -1,0 +1,53 @@
+# 101 BsktEthLPPool.sol label=1
+# DAppSCAN-source/contracts/QuillAudits-BsktEthLPPool Smart Contract/code/BsktEthLPPool.sol
+
+--- L330-L344 ---
+  330      function callOptionalReturn(IERC20 token, bytes memory data) private {
+  331          require(address(token).isContract(), "SafeERC20: call to non-contract");
+  332  
+  333          (bool success, bytes memory returndata) = address(token).call(data);
+  334          require(success, "SafeERC20: low-level call failed");
+  335  
+  336          if (returndata.length > 0) {
+  337                                        
+  338  
+  339              require(
+  340                  abi.decode(returndata, (bool)),
+  341                  "SafeERC20: ERC20 operation did not succeed"
+  342              );
+  343          }
+  344      }
+
+--- L364-L368 ---
+  364      function stake(uint256 amount) nonReentrant public  {
+  365          _totalSupply = _totalSupply.add(amount);
+  366          _balances[_msgSender()] = _balances[_msgSender()].add(amount);
+  367          BSKTASREWARD.safeTransferFrom(_msgSender(), address(this), amount);
+  368      }
+
+--- L370-L374 ---
+  370      function withdraw(uint256 amount) nonReentrant public {
+  371          _totalSupply = _totalSupply.sub(amount);
+  372          _balances[_msgSender()] = _balances[_msgSender()].sub(amount);
+  373          BSKTASREWARD.safeTransfer(_msgSender(), amount);
+  374      }
+
+--- L462-L465 ---
+  462      }
+  463      
+  464                               
+  465      function getReward() public nonReentrant updateReward(_msgSender()){
+
+--- L465-L476 ---
+  465      function getReward() public nonReentrant updateReward(_msgSender()){
+  466          uint256 reward = earned(_msgSender());
+  467  
+  468          if (reward > 0) {
+  469              rewards[_msgSender()] = 0;
+  470          
+  471              STAKEBSKT.safeTransfer(_msgSender(), reward);
+  472              
+  473              emit Rewarded(address(this), _msgSender(), reward);
+  474          }
+  475          
+  476      }

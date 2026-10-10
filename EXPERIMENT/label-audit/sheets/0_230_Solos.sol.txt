@@ -1,0 +1,30 @@
+# 230 Solos.sol label=0
+# DAppSCAN-source/contracts/Runtime_Vеrification-StakeWise/contracts-19da824f44079c2b94c8cca84de77f5bdf3f0e54/contracts/collectors/Solos.sol
+
+--- L98-L123 ---
+   98      function cancelDeposit(bytes32 _withdrawalCredentials, uint256 _amount) external override nonReentrant {
+   99                           
+  100          bytes32 soloId = keccak256(abi.encodePacked(address(this), msg.sender, _withdrawalCredentials));
+  101          Solo storage solo = solos[soloId];
+  102  
+  103                                                       
+  104          require(block.timestamp >= solo.releaseTime, "Solos: current time is before release time");
+  105  
+  106          uint256 newAmount = solo.amount.sub(_amount, "Solos: insufficient balance");
+  107          require(newAmount.mod(VALIDATOR_DEPOSIT) == 0, "Solos: invalid cancel amount");
+  108  
+  109                       
+  110          emit DepositCanceled(soloId, msg.sender, _amount, solo.withdrawalCredentials);
+  111  
+  112          if (newAmount > 0) {
+  113              solo.amount = newAmount;
+  114                                                           
+  115                                                             
+  116              solo.releaseTime = block.timestamp + cancelLockDuration;
+  117          } else {
+  118              delete solos[soloId];
+  119          }
+  120  
+  121                                                      
+  122          msg.sender.sendValue(_amount);
+  123      }

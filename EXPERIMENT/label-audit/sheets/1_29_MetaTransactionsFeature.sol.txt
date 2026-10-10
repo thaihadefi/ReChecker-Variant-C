@@ -1,0 +1,28 @@
+# 29 MetaTransactionsFeature.sol label=1
+# DAppSCAN-source/contracts/consensys-0x_Exchange_v4/protocol-475b608338561a1dce3199bfb9fb59ee9372149b/contracts/zero-ex/contracts/src/features/MetaTransactionsFeature.sol
+
+--- L101-L108 ---
+  101          _;
+  102          uint256 remainingBalance =
+  103              LibSafeMathV06.min256(msg.value, address(this).balance);
+  104          if (remainingBalance > 0) {
+  105              msg.sender.transfer(remainingBalance);
+  106          }
+  107      }
+  108  
+
+--- L538-L551 ---
+  538      function _callSelf(bytes32 hash, bytes memory callData, uint256 value)
+  539          private
+  540          returns (bytes memory returnResult)
+  541      {
+  542          bool success;
+  543          (success, returnResult) = address(this).call{value: value}(callData);
+  544          if (!success) {
+  545              LibMetaTransactionsRichErrors.MetaTransactionCallFailedError(
+  546                  hash,
+  547                  callData,
+  548                  returnResult
+  549              ).rrevert();
+  550          }
+  551      }

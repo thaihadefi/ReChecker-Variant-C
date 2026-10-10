@@ -1,0 +1,16 @@
+# 111 BaseRewards.sol label=1
+# DAppSCAN-source/contracts/Iosiro-1inch Exchange Staking Rewards Smart Contract Audit/liquidity-protocol-c9c8bc600e8e7897f70f84b006de601d4f4bcbe3/BaseRewards.sol
+
+--- L75-L83 ---
+   75      function getReward(uint i) public updateReward(msg.sender) {
+   76          TokenRewards storage tr = tokenRewards[i];
+   77          uint256 reward = tr.rewards[msg.sender];
+   78          if (reward > 0) {
+   79              tr.rewards[msg.sender] = 0;
+   80              tr.gift.transfer(msg.sender, reward);
+   81              emit RewardPaid(msg.sender, reward);
+   82          }
+   83      }
+
+--- L76-L76 ---
+   76          TokenRewards storage tr = tokenRewards[i];

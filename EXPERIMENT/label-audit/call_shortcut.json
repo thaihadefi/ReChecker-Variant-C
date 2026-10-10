@@ -1,0 +1,44 @@
+{
+ "1671_unique": {
+  "1": {
+   "n": 53,
+   "call_anywhere": 1.0,
+   "call_in_b3_window": 0.585,
+   "call.value_in_window": 0.585
+  },
+  "0": {
+   "n": 132,
+   "call_anywhere": 1.0,
+   "call_in_b3_window": 0.273,
+   "call.value_in_window": 0.265
+  }
+ },
+ "smartbugs": {
+  "1": {
+   "n": 22,
+   "call_anywhere": 1.0,
+   "call_in_b3_window": 0.955,
+   "call.value_in_window": 0.864
+  },
+  "0": {
+   "n": 57,
+   "call_anywhere": 0.035,
+   "call_in_b3_window": 0.0,
+   "call.value_in_window": 0.0
+  }
+ },
+ "dappscan_pool": {
+  "1": {
+   "n": 114,
+   "call_anywhere": 0.228,
+   "call_in_b3_window": 0.026,
+   "call.value_in_window": 0.009
+  },
+  "0": {
+   "n": 834,
+   "call_anywhere": 0.121,
+   "call_in_b3_window": 0.03,
+   "call.value_in_window": 0.002
+  }
+ }
+}

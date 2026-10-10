@@ -1,0 +1,188 @@
+# 108 Amp.sol label=1
+# DAppSCAN-source/contracts/consensys-Amp/amp-token-contracts-6871b6c64c712835b332e515cc553308dcbbc539/contracts/Amp.sol
+
+--- L615-L624 ---
+  615      function swap(address _from) public {
+  616          uint256 amount = swapToken.allowance(_from, address(this));
+  617          require(amount > 0, EC_53_INSUFFICIENT_ALLOWANCE);
+  618                                                      
+  619          swapToken.transferFrom(_from, swapTokenGraveyard, amount);
+  620  
+  621          _mint(msg.sender, _from, amount, "");
+  622  
+  623          emit Swap(msg.sender, _from, amount);
+  624      }
+
+--- L1134-L1204 ---
+ 1134                                   
+ 1135                                    
+ 1136                                                    
+ 1137                                                                                    
+ 1138                                                      
+ 1139                                                                                   
+ 1140                  
+ 1141                                       
+ 1142         
+ 1143      function _transferByPartition(
+ 1144          bytes32 _fromPartition,
+ 1145          address _operator,
+ 1146          address _from,
+ 1147          address _to,
+ 1148          uint256 _value,
+ 1149          bytes memory _data,
+ 1150          bytes memory _operatorData
+ 1151      ) internal returns (bytes32) {
+ 1152          require(
+ 1153              _balanceOfByPartition[_from][_fromPartition] >= _value,
+ 1154              EC_52_INSUFFICIENT_BALANCE
+ 1155          );
+ 1156  
+ 1157          bytes32 toPartition = _fromPartition;
+ 1158          if (_data.length >= 64) {
+ 1159              toPartition = _getDestinationPartition(_fromPartition, _data);
+ 1160          }
+ 1161          
+ 1162          _callPreTransferHooks(
+ 1163              _fromPartition,
+ 1164              _operator,
+ 1165              _from,
+ 1166              _to,
+ 1167              _value,
+ 1168              _data,
+ 1169              _operatorData
+ 1170          );
+ 1171  
+ 1172          _removeTokenFromPartition(_from, _fromPartition, _value);
+ 1173          _transfer(_from, _to, _value);
+ 1174          _addTokenToPartition(_to, toPartition, _value);
+ 1175  
+ 1176          _callPostTransferHooks(
+ 1177              toPartition,
+ 1178              _operator,
+ 1179              _from,
+ 1180              _to,
+ 1181              _value,
+ 1182              _data,
+ 1183              _operatorData
+ 1184          );
+ 1185  
+ 1186          emit TransferByPartition(
+ 1187              _fromPartition,
+ 1188              _operator,
+ 1189              _from,
+ 1190              _to,
+ 1191              _value,
+ 1192              _data,
+ 1193              _operatorData
+ 1194          );
+ 1195  
+ 1196          if (toPartition != _fromPartition) {
+ 1197              emit ChangedPartition(_fromPartition, toPartition, _value);
+ 1198          }
+ 1199  
+ 1200          return toPartition;
+ 1201      }
+ 1202  
+ 1203         
+ 1204                                                         
+
+--- L1339-L1386 ---
+ 1339      function _callPreTransferHooks(
+ 1340          bytes32 _fromPartition,
+ 1341          address _operator,
+ 1342          address _from,
+ 1343          address _to,
+ 1344          uint256 _value,
+ 1345          bytes memory _data,
+ 1346          bytes memory _operatorData
+ 1347      ) internal {
+ 1348          address senderImplementation;
+ 1349          senderImplementation = interfaceAddr(_from, AMP_TOKENS_SENDER);
+ 1350          if (senderImplementation != address(0)) {
+ 1351              IAmpTokensSender(senderImplementation).tokensToTransfer(
+ 1352                  msg.sig,
+ 1353                  _fromPartition,
+ 1354                  _operator,
+ 1355                  _from,
+ 1356                  _to,
+ 1357                  _value,
+ 1358                  _data,
+ 1359                  _operatorData
+ 1360              );
+ 1361          }
+ 1362  
+ 1363                                                                                      
+ 1364                                                            
+ 1365          bytes4 fromPartitionPrefix = _getPartitionPrefix(_fromPartition);
+ 1366          if (_isPartitionStrategy[fromPartitionPrefix]) {
+ 1367              address fromPartitionValidatorImplementation;
+ 1368              fromPartitionValidatorImplementation = interfaceAddr(
+ 1369                  address(this),
+ 1370                  _getPartitionStrategyValidatorIName(fromPartitionPrefix)
+ 1371              );
+ 1372              if (fromPartitionValidatorImplementation != address(0)) {
+ 1373                  IAmpPartitionStrategyValidator(fromPartitionValidatorImplementation)
+ 1374                      .tokensFromPartitionToValidate(
+ 1375                      msg.sig,
+ 1376                      _fromPartition,
+ 1377                      _operator,
+ 1378                      _from,
+ 1379                      _to,
+ 1380                      _value,
+ 1381                      _data,
+ 1382                      _operatorData
+ 1383                  );
+ 1384              }
+ 1385          }
+ 1386      }
+
+--- L1399-L1447 ---
+ 1399      function _callPostTransferHooks(
+ 1400          bytes32 _toPartition,
+ 1401          address _operator,
+ 1402          address _from,
+ 1403          address _to,
+ 1404          uint256 _value,
+ 1405          bytes memory _data,
+ 1406          bytes memory _operatorData
+ 1407      ) internal {
+ 1408          bytes4 toPartitionPrefix = _getPartitionPrefix(_toPartition);
+ 1409          if (_isPartitionStrategy[toPartitionPrefix]) {
+ 1410              address partitionManagerImplementation;
+ 1411              partitionManagerImplementation = interfaceAddr(
+ 1412                  address(this),
+ 1413                  _getPartitionStrategyValidatorIName(toPartitionPrefix)
+ 1414              );
+ 1415              if (partitionManagerImplementation != address(0)) {
+ 1416                  IAmpPartitionStrategyValidator(partitionManagerImplementation)
+ 1417                      .tokensToPartitionToValidate(
+ 1418                      msg.sig,
+ 1419                      _toPartition,
+ 1420                      _operator,
+ 1421                      _from,
+ 1422                      _to,
+ 1423                      _value,
+ 1424                      _data,
+ 1425                      _operatorData
+ 1426                  );
+ 1427              }
+ 1428          } else {
+ 1429              require(toPartitionPrefix == ZERO_PREFIX, EC_5D_PARTITION_RESERVED);
+ 1430          }
+ 1431  
+ 1432          address recipientImplementation;
+ 1433          recipientImplementation = interfaceAddr(_to, AMP_TOKENS_RECIPIENT);
+ 1434  
+ 1435          if (recipientImplementation != address(0)) {
+ 1436              IAmpTokensRecipient(recipientImplementation).tokensReceived(
+ 1437                  msg.sig,
+ 1438                  _toPartition,
+ 1439                  _operator,
+ 1440                  _from,
+ 1441                  _to,
+ 1442                  _value,
+ 1443                  _data,
+ 1444                  _operatorData
+ 1445              );
+ 1446          }
+ 1447      }

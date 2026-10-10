@@ -68,5 +68,13 @@ def build_model(config, spec: VariantSpec) -> Model:
         encoded_input = vectors
         inputs = [vectors, valid]
 
+    if config.token_dropout > 0.0:
+        # One draw per token (shared across features): drops whole tokens so
+        # the classifier cannot lean on a few memorized source-specific tokens.
+        encoded_input = layers.Dropout(
+            config.token_dropout,
+            noise_shape=(None, config.max_len, 1),
+            name="token_dropout",
+        )(encoded_input)
     output = _classifier(encoded_input, valid, config)
     return _compile(Model(inputs, output, name=f"rechecker_{spec.name}"), config.learning_rate)

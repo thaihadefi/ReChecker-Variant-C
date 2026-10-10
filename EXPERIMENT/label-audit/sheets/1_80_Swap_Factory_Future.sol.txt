@@ -1,0 +1,188 @@
+# 80 Swap_Factory_Future.sol label=1
+# DAppSCAN-source/contracts/PeckShield-Arche/Arche_v1.0_Eros-909f35e0064d636aaf61954a6026fda7b2bade7f/Swap_Factory_Future.sol
+
+--- L276-L358 ---
+  276      function Deposit_For_Tail(uint256 amount,address referer)public
+  277      {
+  278  
+  279        
+  280          if(m_Permit_Mode==true)
+  281          {
+  282              require(m_Permit_List[msg.sender]==true,"NOT PERMITTED");
+  283          }
+  284          
+  285  
+  286          require (m_Entanglement==true,"NOT ACTIONABLE");
+  287          require (m_Option_Finish_Tail==false ,"SWAP CLOSED");
+  288          
+  289          
+  290                                                                                                                                     
+  291          if(m_Amount_Tail>=m_Total_Amount_Tail)revert();
+  292          uint256 e_amount= m_Total_Amount_Tail-m_Amount_Tail;
+  293          if(e_amount>amount)
+  294          {
+  295              e_amount=amount;
+  296          }
+  297          bool res=false;
+  298                                                                                        
+  299          
+  300                                                                                    
+  301          Receive_Token(m_Token_Tail,e_amount,msg.sender);
+  302  
+  303          m_Amount_Tail=m_Amount_Tail+e_amount;
+  304          m_Amount_Tail_Swapped+=e_amount;
+  305          
+  306                                                                                        
+  307          
+  308          
+  309                                                                                     
+  310          uint256 amount_back=e_amount*m_Total_Amount_Head/m_Total_Amount_Tail;
+  311          if(amount_back>=1)
+  312          {
+  313              amount_back=amount_back.sub(1);
+  314          }
+  315          m_Amount_Head_Swapped+=amount_back;
+  316        
+  317          uint256 reward_back=m_Amount_Reward*e_amount/m_Total_Amount_Tail;
+  318          if(reward_back>=1)
+  319          {
+  320              reward_back=reward_back.sub(1);
+  321          }
+  322          m_Amount_Reward_Swapped+=reward_back;
+  323                                                                                           
+  324          
+  325          
+  326          
+  327                                                                                      
+  328          if(amount_back>=1)
+  329          {
+  330              m_Total_Future_Balance_Tail=m_Total_Future_Balance_Tail.add(amount_back);
+  331              m_Future_Balance_Tail[msg.sender]=m_Future_Balance_Tail[msg.sender].add(amount_back);
+  332          }       
+  333          if(reward_back>=1)
+  334          {
+  335              ERC20Interface(m_Token_Reward).transfer(referer ,reward_back);
+  336          }             
+  337          if(e_amount>=1)
+  338          {
+  339              m_Future_Balance_Head=m_Future_Balance_Head.add(e_amount);
+  340          }
+  341                                                                                     
+  342          
+  343          
+  344                                                                                   
+  345          if(block.number>= m_Future_Block)
+  346          {
+  347              Impl_Delivery(msg.sender);
+  348          }
+  349                                                                                   
+  350          
+  351          
+  352                           
+  353          D_Swap_Main(m_DSwap_Main_Address).Triger_Deposit_For_Tail( address(this) , msg.sender, e_amount,m_Amount_Tail,referer,
+  354          m_Total_Amount_Head.sub(m_Amount_Head_Swapped),m_Total_Amount_Tail.sub(m_Amount_Tail_Swapped));
+  355          
+  356          D_Swap_Main(m_DSwap_Main_Address).Triger_Remaining_Supply( address(this) ,
+  357          m_Total_Amount_Head.sub(m_Amount_Head_Swapped),m_Total_Amount_Tail.sub(m_Amount_Tail_Swapped));
+  358      }
+
+--- L362-L382 ---
+  362         
+  363          uint256 head_amount_back=m_Future_Balance_Tail[user];
+  364      
+  365          if(head_amount_back>=1)
+  366          {
+  367              Charging_Transfer_ERC20(m_Token_Head,user,head_amount_back);
+  368          } 
+  369          m_Amount_Head_Deliveryed=m_Amount_Head_Deliveryed.add(head_amount_back);
+  370          m_Total_Future_Balance_Tail=m_Total_Future_Balance_Tail.sub(head_amount_back);
+  371          m_Future_Balance_Tail[user]=0;
+  372          
+  373          uint256 tail_amount_back=0;
+  374          tail_amount_back=m_Future_Balance_Head;
+  375          m_Future_Balance_Head=0;
+  376          Charging_Transfer_ERC20(m_Token_Tail,owner,tail_amount_back);
+  377          m_Amount_Tail_Deliveryed+=tail_amount_back;
+  378          
+  379          D_Swap_Main(m_DSwap_Main_Address).Triger_Claim_For_Delivery( address(this) , user);
+  380      
+  381      }
+  382      function Claim_For_Delivery() public
+
+--- L391-L410 ---
+  391      function Charging_Transfer_ERC20 (address token ,address to ,uint256 amount)private
+  392      {
+  393          (address tc_addr)= D_Swap_Main(m_DSwap_Main_Address).m_Trading_Charge_Lib();
+  394          (address collecter_addr)= D_Swap_Main(m_DSwap_Main_Address).m_Address_of_Token_Collecter();
+  395          uint256 exactly_amount=Trading_Charge(tc_addr).Amount(amount,to);
+  396          
+  397          
+  398          bool res=true;
+  399          if(exactly_amount>=1)
+  400          {
+  401              ERC20Interface(token).transfer(to,exactly_amount);
+  402          }
+  403         
+  404          
+  405          if(amount.sub(exactly_amount)>=1)
+  406          {
+  407             ERC20Interface(token).transfer(collecter_addr,amount.sub(exactly_amount));
+  408          }
+  409          
+  410      }
+
+--- L411-L445 ---
+  411      function Withdraw_Head()public onlyOwner
+  412      {
+  413          
+  414          uint256 status=0;
+  415          require(m_Option_Finish_Head==false,"Option Closed");
+  416          m_Option_Finish_Head=true;
+  417          m_Option_Finish_Tail=true;
+  418  
+  419          if(m_Entanglement==true)
+  420          {
+  421              
+  422              uint256 amount_back=0;  
+  423              amount_back=m_Total_Amount_Head- m_Amount_Head_Swapped;
+  424              
+  425              if(amount_back>=1)
+  426              {
+  427                  ERC20Interface(m_Token_Head).transfer( msg.sender,amount_back);
+  428              }
+  429          }
+  430          
+  431          if(m_Initialized==true)
+  432          {
+  433              
+  434              uint256 reward_back=0;  
+  435              reward_back= m_Amount_Reward- m_Amount_Reward_Swapped;
+  436              if(reward_back>=1)
+  437              {
+  438                  ERC20Interface(m_Token_Reward).transfer( msg.sender,reward_back);
+  439              }
+  440          }
+  441          
+  442                            
+  443          D_Swap_Main(m_DSwap_Main_Address).Triger_Withdraw_Head( address(this) , msg.sender,status);
+  444  
+  445      }
+
+--- L447-L457 ---
+  447      function Receive_Token(address addr,uint256 value,address from) internal
+  448      {
+  449          uint256 t_balance_old = ERC20Interface(addr).balanceOf(address(this));
+  450          ERC20Interface(addr).transferFrom(from, address(this),value);
+  451          uint256 t_balance = ERC20Interface(addr).balanceOf(address(this));
+  452          
+  453          uint256 e_amount=t_balance.sub(t_balance_old);
+  454          
+  455          require(e_amount>=value,"?TOKEN LOST");
+  456          
+  457      }
+
+--- L462-L465 ---
+  462      function Call_Function(address addr,uint256 value ,bytes memory data) public  onlyOwner  {
+  463      addr.call{value:value}(data);
+  464       
+  465      }

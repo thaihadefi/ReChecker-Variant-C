@@ -1,0 +1,92 @@
+# 114 bVault.sol label=1
+# DAppSCAN-source/contracts/PeckShield-btdotfinance/bt-finance-6300bc1271b73a1755fae02594d25fdf6fa39a9c/contracts/vault/bVault.sol
+
+--- L253-L264 ---
+  253      function callOptionalReturn(IERC20 token, bytes memory data) private {
+  254          require(address(token).isContract(), "SafeERC20: call to non-contract");
+  255  
+  256                                                            
+  257          (bool success, bytes memory returndata) = address(token).call(data);
+  258          require(success, "SafeERC20: low-level call failed");
+  259  
+  260          if (returndata.length > 0) {                           
+  261                                                          
+  262              require(abi.decode(returndata, (bool)), "SafeERC20: ERC20 operation did not succeed");
+  263          }
+  264      }
+
+--- L347-L351 ---
+  347      function earn() public {
+  348          uint _bal = available();
+  349          token.safeTransfer(controller, _bal);
+  350          Controller(controller).earn(address(token), _bal);
+  351      }
+
+--- L357-L375 ---
+  357      function deposit(uint _amount) public onlyRestrictContractCall {
+  358  		require(_amount > 0, "Cannot deposit 0");
+  359          uint _pool = balance();
+  360          uint _before = token.balanceOf(address(this));
+  361          token.safeTransferFrom(msg.sender, address(this), _amount);
+  362          uint _after = token.balanceOf(address(this));
+  363          _amount = _after.sub(_before);                                            
+  364          uint shares = 0;
+  365          if (totalSupply() == 0) {
+  366              shares = _amount;
+  367          } else {
+  368              shares = (_amount.mul(totalSupply())).div(_pool);
+  369          }
+  370          _mint(msg.sender, shares);
+  371          userDepoistTime[msg.sender] = now;
+  372          if (token.balanceOf(address(this))>earnLowerlimit){
+  373            earn();
+  374          }
+  375      }
+
+--- L358-L376 ---
+  358  		require(_amount > 0, "Cannot deposit 0");
+  359          uint _pool = balance();
+  360          uint _before = token.balanceOf(address(this));
+  361          token.safeTransferFrom(msg.sender, address(this), _amount);
+  362          uint _after = token.balanceOf(address(this));
+  363          _amount = _after.sub(_before);                                            
+  364          uint shares = 0;
+  365          if (totalSupply() == 0) {
+  366              shares = _amount;
+  367          } else {
+  368              shares = (_amount.mul(totalSupply())).div(_pool);
+  369          }
+  370          _mint(msg.sender, shares);
+  371          userDepoistTime[msg.sender] = now;
+  372          if (token.balanceOf(address(this))>earnLowerlimit){
+  373            earn();
+  374          }
+  375      }
+  376      
+
+--- L384-L408 ---
+  384      function withdraw(uint _shares) public onlyRestrictContractCall {
+  385  		require(_shares > 0, "Cannot withdraw 0");
+  386  
+  387          uint r = (balance().mul(_shares)).div(totalSupply());
+  388          _burn(msg.sender, _shares);
+  389          
+  390                          
+  391          uint b = token.balanceOf(address(this));
+  392          if (b < r) {
+  393              uint _withdraw = r.sub(b);
+  394              Controller(controller).withdraw(address(token), _withdraw);
+  395              uint _after = token.balanceOf(address(this));
+  396              uint _diff = _after.sub(b);
+  397              if (_diff < _withdraw) {
+  398                  r = b.add(_diff);
+  399              }
+  400          }
+  401          uint feeRatio = getFeeRatio();
+  402          if(feeRatio>0){
+  403              uint fee = r.mul(feeRatio).div(feeMax);
+  404              r = r.sub(fee);
+  405              token.safeTransfer(feeAddress,fee);
+  406          }
+  407          token.safeTransfer(msg.sender, r);
+  408      }

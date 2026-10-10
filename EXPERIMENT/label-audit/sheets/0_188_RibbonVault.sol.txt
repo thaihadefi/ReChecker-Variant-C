@@ -1,0 +1,87 @@
+# 188 RibbonVault.sol label=0
+# DAppSCAN-source/contracts/openzeppelin-Ribbon_Finance/ribbon-v2-3fa3bec15ad1e2b18ad87f979b87a68368497f13/contracts/vaults/base/RibbonVault.sol
+
+--- L117-L149 ---
+  117      function baseInitialize(
+  118          address _owner,
+  119          address _feeRecipient,
+  120          uint256 _managementFee,
+  121          uint256 _performanceFee,
+  122          string memory tokenName,
+  123          string memory tokenSymbol,
+  124          Vault.VaultParams calldata _vaultParams
+  125      ) internal initializer {
+  126          VaultLifecycle.verifyConstructorParams(
+  127              _owner,
+  128              _feeRecipient,
+  129              _performanceFee,
+  130              tokenName,
+  131              tokenSymbol,
+  132              _vaultParams
+  133          );
+  134  
+  135          __ReentrancyGuard_init();
+  136          __ERC20_init(tokenName, tokenSymbol);
+  137          __Ownable_init();
+  138          transferOwnership(_owner);
+  139  
+  140          feeRecipient = _feeRecipient;
+  141          performanceFee = _performanceFee;
+  142          managementFee = _managementFee.mul(10**6).div(WEEKS_PER_YEAR);
+  143          vaultParams = _vaultParams;
+  144          vaultState.lastLockedAmount = uint104(
+  145              IERC20(vaultParams.asset).balanceOf(address(this))
+  146          );
+  147  
+  148          vaultState.round = 1;
+  149      }
+
+--- L220-L230 ---
+  220      function deposit(uint256 amount) external nonReentrant {
+  221          require(amount > 0, "!amount");
+  222  
+  223          _depositFor(amount, msg.sender);
+  224  
+  225          IERC20(vaultParams.asset).safeTransferFrom(
+  226              msg.sender,
+  227              address(this),
+  228              amount
+  229          );
+  230      }
+
+--- L238-L252 ---
+  238      function depositFor(uint256 amount, address creditor)
+  239          external
+  240          nonReentrant
+  241      {
+  242          require(amount > 0, "!amount");
+  243          require(creditor != address(0));
+  244  
+  245          _depositFor(amount, creditor);
+  246  
+  247          IERC20(vaultParams.asset).safeTransferFrom(
+  248              msg.sender,
+  249              address(this),
+  250              amount
+  251          );
+  252      }
+
+--- L549-L558 ---
+  549      function transferAsset(address payable recipient, uint256 amount) internal {
+  550          address asset = vaultParams.asset;
+  551          if (asset == WETH) {
+  552              IWETH(WETH).withdraw(amount);
+  553              (bool success, ) = recipient.call{value: amount}("");
+  554              require(success, "!success");
+  555              return;
+  556          }
+  557          IERC20(asset).safeTransfer(recipient, amount);
+  558      }
+
+--- L632-L637 ---
+  632      function totalBalance() public view returns (uint256) {
+  633          return
+  634              uint256(vaultState.lockedAmount).add(
+  635                  IERC20(vaultParams.asset).balanceOf(address(this))
+  636              );
+  637      }

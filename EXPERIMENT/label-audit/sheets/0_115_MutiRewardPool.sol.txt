@@ -1,0 +1,228 @@
+# 115 MutiRewardPool.sol label=0
+# DAppSCAN-source/contracts/PeckShield-Metatime/metatime-6fd2d5b132377b007c3baa79938a53132fd2f955/contracts/pools/MutiRewardPool.sol
+
+--- L322-L350 ---
+  322      function deposit(uint256 pid, uint256 _amount) public {
+  323          require(_amount > 0, "bad amount");
+  324  
+  325          PoolInfo storage pool = poolInfo[pid];
+  326          UserInfo storage user = userInfo[msgSender()];
+  327  
+  328                                                                                  
+  329  
+  330          updatePool(pid);
+  331  
+  332          uint256 oldBal = pool.lpToken.balanceOf(address(poolVault));
+  333          pool.lpToken.safeTransferFrom(address(msgSender()), address(poolVault), _amount);
+  334          _amount = pool.lpToken.balanceOf(address(poolVault)).sub(oldBal);
+  335  
+  336          lastStakingId++;
+  337          pool.totalDeposit = pool.totalDeposit.add(_amount);
+  338  
+  339          stakingInfo[lastStakingId] = StakingInfo({
+  340              pid: pid,
+  341              amount: _amount,
+  342              token0RewardDebt: _amount.mul(pool.token0AccRewardsPerShare).add(_amount.mul(pool.token0AccAdditionalRewardsPerShare)).div(1e12),
+  343              token1RewardDebt: _amount.mul(pool.token1AccRewardsPerShare).add(_amount.mul(pool.token1AccAdditionalRewardsPerShare)).div(1e12),
+  344              time: block.timestamp
+  345          });
+  346          user.stakingIds.add(lastStakingId);
+  347  
+  348          emit Deposit(msgSender(), pid, lastStakingId, _amount);
+  349          emit Transfer(address(0), msgSender(), _amount);
+  350      }
+
+--- L376-L425 ---
+  376      function harvest(uint256 _stakingId) public {
+  377          
+  378          UserInfo storage user = userInfo[msgSender()];
+  379          require(user.stakingIds.contains(_stakingId), "not the staking owner");
+  380          StakingInfo storage staking = stakingInfo[_stakingId];
+  381          PoolInfo storage pool = poolInfo[staking.pid];
+  382  
+  383          updatePool(staking.pid);
+  384  
+  385          uint256 reward0;
+  386          uint256 reward1;
+  387          if (staking.amount > 0) {
+  388              {
+  389                  uint256 pending = staking.amount.mul(pool.token0AccRewardsPerShare).add(staking.amount.mul(pool.token0AccAdditionalRewardsPerShare)).div(1e12).sub(staking.token0RewardDebt);
+  390                  if(pending > 0) {
+  391                      uint256 bal = rewardToken0.balanceOf(address(this));
+  392                      if(bal >= pending) {
+  393                          reward0 = pending;
+  394                      } else {
+  395                          reward0 = bal;
+  396                      }
+  397                  }
+  398              }
+  399              
+  400              {
+  401                  uint256 pending = staking.amount.mul(pool.token1AccRewardsPerShare).add(staking.amount.mul(pool.token1AccAdditionalRewardsPerShare)).div(1e12).sub(staking.token1RewardDebt);
+  402                  if(pending > 0) {
+  403                      uint256 bal = rewardToken1.balanceOf(address(this));
+  404                      if(bal >= pending) {
+  405                          reward1 = pending;
+  406                      } else {
+  407                          reward1 = bal;
+  408                      }
+  409                  }
+  410              }
+  411          }
+  412  
+  413          staking.token0RewardDebt = staking.amount.mul(pool.token0AccRewardsPerShare).add(staking.amount.mul(pool.token0AccAdditionalRewardsPerShare)).div(1e12);
+  414          staking.token1RewardDebt = staking.amount.mul(pool.token1AccRewardsPerShare).add(staking.amount.mul(pool.token1AccAdditionalRewardsPerShare)).div(1e12);
+  415  
+  416          if (reward0 > 0) {
+  417              rewardToken0.safeTransfer(address(msgSender()), reward0);
+  418          }
+  419  
+  420           if (reward1 > 0) {
+  421              rewardToken1.safeTransfer(address(msgSender()), reward1);
+  422          }
+  423  
+  424          emit Harvest(msgSender(), staking.pid, _stakingId, reward0, reward1);
+  425      }
+
+--- L428-L450 ---
+  428      function withdraw(uint256 _stakingId) public {
+  429          UserInfo storage user = userInfo[msgSender()];
+  430          require(user.stakingIds.contains(_stakingId), "not the staking owner");
+  431          StakingInfo storage staking = stakingInfo[_stakingId];
+  432          PoolInfo storage pool = poolInfo[staking.pid];
+  433  
+  434          require(block.timestamp.sub(staking.time) >= pool.duration, "not time");
+  435  
+  436          harvest(_stakingId);
+  437  
+  438          uint256 _amount = staking.amount;
+  439          staking.amount = 0;
+  440          pool.totalDeposit = pool.totalDeposit.sub(_amount);
+  441          pool.lpToken.safeTransferFrom(address(poolVault), address(msgSender()), _amount);
+  442          
+  443          staking.token0RewardDebt = _amount.mul(pool.token0AccRewardsPerShare).add(_amount.mul(pool.token0AccAdditionalRewardsPerShare)).div(1e12);
+  444          staking.token1RewardDebt = _amount.mul(pool.token1AccRewardsPerShare).add(_amount.mul(pool.token1AccAdditionalRewardsPerShare)).div(1e12);
+  445  
+  446          user.stakingIds.remove(_stakingId);
+  447  
+  448          emit Withdraw(msgSender(), staking.pid, _stakingId, _amount);
+  449          emit Transfer(msgSender(), address(0), _amount);
+  450      }
+
+--- L453-L477 ---
+  453      function emergencyWithdraw(uint256 _stakingId) public {
+  454          UserInfo storage user = userInfo[msgSender()];
+  455          require(user.stakingIds.contains(_stakingId), "not the staking owner");
+  456          StakingInfo storage staking = stakingInfo[_stakingId];
+  457          PoolInfo storage pool = poolInfo[staking.pid];
+  458          require(block.number.sub(staking.time) >= pool.duration, "not time");
+  459  
+  460          uint256 amount = staking.amount;
+  461          
+  462          if(pool.totalDeposit >= staking.amount) {
+  463              pool.totalDeposit = pool.totalDeposit.sub(staking.amount);
+  464          } else {
+  465              pool.totalDeposit = 0;
+  466          }
+  467          staking.amount = 0;
+  468          staking.token0RewardDebt = 0;
+  469          staking.token1RewardDebt = 0;
+  470  
+  471          user.stakingIds.remove(_stakingId);
+  472  
+  473          pool.lpToken.safeTransferFrom(address(poolVault), address(msgSender()), amount);
+  474  
+  475          emit EmergencyWithdraw(msgSender(),  staking.pid, _stakingId, amount);
+  476          emit Transfer(msgSender(), address(0), amount);
+  477      }
+
+--- L480-L483 ---
+  480      function emergencyRewardWithdrawToken0(uint256 _amount) public onlyOwner {
+  481          require(_amount <= rewardToken0.balanceOf(address(this)), 'not enough token');
+  482          rewardToken0.safeTransfer(address(msgSender()), _amount);
+  483      }
+
+--- L486-L489 ---
+  486      function emergencyRewardWithdrawToken1(uint256 _amount) public onlyOwner {
+  487          require(_amount <= rewardToken1.balanceOf(address(this)), 'not enough token');
+  488          rewardToken1.safeTransfer(address(msgSender()), _amount);
+  489      }
+
+--- L500-L531 ---
+  500      function donate(IERC20 token, uint256 donateAmount) public {
+  501          require(token == rewardToken0 || token == rewardToken1, "not support token");
+  502  
+  503          uint256 oldBal = IERC20(token).balanceOf(address(this));
+  504          IERC20(token).safeTransferFrom(msgSender(), address(this), donateAmount);
+  505          uint256 realAmount = IERC20(token).balanceOf(address(this)) - oldBal;
+  506  
+  507          bool isToken0 = token == rewardToken0 ? true : false;
+  508          uint256 length = poolInfo.length;
+  509          for (uint256 pid = 0; pid < length; ++pid) {
+  510              updatePool(pid);
+  511  
+  512              PoolInfo storage pool = poolInfo[pid];
+  513              if(pool.allocPoint == 0) {
+  514                  continue;
+  515              }
+  516  
+  517              if(pool.totalDeposit == 0) {
+  518                  continue;
+  519              }
+  520  
+  521              uint256 tokenReward = realAmount.mul(1e12).mul(pool.allocPoint).div(totalAllocPoint);
+  522              if (isToken0) {
+  523                  pool.token0AccRewardsPerShare = pool.token0AccRewardsPerShare.add(tokenReward.div(pool.totalDeposit));
+  524                  pool.token0AccDonateAmount = pool.token0AccDonateAmount.add(tokenReward);
+  525              } else {
+  526                  pool.token1AccRewardsPerShare = pool.token1AccRewardsPerShare.add(tokenReward.div(pool.totalDeposit));
+  527                  pool.token1AccDonateAmount = pool.token1AccDonateAmount.add(tokenReward);
+  528              }
+  529              emit Donate(msgSender(), pid, address(token), tokenReward.div(1e12), tokenReward.div(1e12));
+  530          }
+  531      }
+
+--- L533-L575 ---
+  533      function addAdditionalRewards(IERC20 token, uint256 amount, uint256 rewardsBlocks) public onlyCaller {
+  534          require(token == rewardToken0 || token == rewardToken1, "not support token");
+  535  
+  536          massUpdatePools();
+  537  
+  538          uint256 oldBal = IERC20(token).balanceOf(address(this));
+  539          IERC20(token).safeTransferFrom(msgSender(), address(this), amount);
+  540          uint256 realAmount = IERC20(token).balanceOf(address(this)).sub(oldBal);
+  541  
+  542          if (token == rewardToken0) {
+  543              uint256 remainingBlocks = token0AdditionalRewardEndBlock > block.number ? token0AdditionalRewardEndBlock.sub(block.number) : 0;
+  544              uint256 remainingBal = token0AdditionalRewardPerBlock.mul(remainingBlocks);
+  545  
+  546              if(remainingBal > 0) {
+  547                  rewardsBlocks = rewardsBlocks.add(remainingBlocks);
+  548              }
+  549              remainingBal = remainingBal.add(realAmount);
+  550  
+  551              token0AdditionalRewardPerBlock = remainingBal.div(rewardsBlocks);
+  552  
+  553              if(block.number >= startBlock) {
+  554                  token0AdditionalRewardEndBlock = block.number.add(rewardsBlocks);
+  555              } else {
+  556                  token0AdditionalRewardEndBlock = startBlock.add(rewardsBlocks);
+  557              }
+  558          } else {
+  559              uint256 remainingBlocks = token1AdditionalRewardEndBlock > block.number ? token1AdditionalRewardEndBlock.sub(block.number) : 0;
+  560              uint256 remainingBal = token1AdditionalRewardPerBlock.mul(remainingBlocks);
+  561  
+  562              if(remainingBal > 0) {
+  563                  rewardsBlocks = rewardsBlocks.add(remainingBlocks);
+  564              }
+  565              remainingBal = remainingBal.add(realAmount);
+  566  
+  567              token1AdditionalRewardPerBlock = remainingBal.div(rewardsBlocks);
+  568  
+  569              if(block.number >= startBlock) {
+  570                  token1AdditionalRewardEndBlock = block.number.add(rewardsBlocks);
+  571              } else {
+  572                  token1AdditionalRewardEndBlock = startBlock.add(rewardsBlocks);
+  573              }
+  574          }
+  575      }

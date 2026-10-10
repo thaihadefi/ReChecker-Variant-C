@@ -1,0 +1,31 @@
+# 324 Staking.sol label=0
+# DAppSCAN-source/contracts/PeckShield-AirSwap/airswap-protocols-ac62b7109974d9069ff6bc153bc9660acc4e144f/source/staking/contracts/Staking.sol
+
+--- L173-L181 ---
+  173    function unstake(uint256 amount) external override {
+  174      address account;
+  175      delegateAccounts[msg.sender] != address(0)
+  176        ? account = delegateAccounts[msg.sender]
+  177        : account = msg.sender;
+  178      _unstake(account, amount);
+  179      token.transfer(account, amount);
+  180      emit Transfer(account, address(0), amount);
+  181    }
+
+--- L252-L267 ---
+  252    function _stake(address account, uint256 amount) internal {
+  253      require(amount > 0, "AMOUNT_INVALID");
+  254      stakes[account].duration = duration;
+  255      if (stakes[account].balance == 0) {
+  256        stakes[account].balance = amount;
+  257        stakes[account].timestamp = block.timestamp;
+  258      } else {
+  259        uint256 nowAvailable = available(account);
+  260        stakes[account].balance = stakes[account].balance.add(amount);
+  261        stakes[account].timestamp = block.timestamp.sub(
+  262          nowAvailable.mul(stakes[account].duration).div(stakes[account].balance)
+  263        );
+  264      }
+  265      token.safeTransferFrom(msg.sender, address(this), amount);
+  266      emit Transfer(address(0), account, amount);
+  267    }

@@ -1,0 +1,100 @@
+# 100 ve.sol label=1
+# DAppSCAN-source/contracts/BlockSec-blocksec_multichain_vemult_v1.0_signed/veMULTI-bac804399d1ea280e5bd8cdc9488b6fa6a0a7fcc/contracts/ve.sol
+
+--- L675-L697 ---
+  675      function safeTransferFrom(
+  676          address _from,
+  677          address _to,
+  678          uint _tokenId,
+  679          bytes memory _data
+  680      ) public {
+  681          _transferFrom(_from, _to, _tokenId, msg.sender);
+  682  
+  683          if (_isContract(_to)) {
+  684                                                                                                         
+  685              try IERC721Receiver(_to).onERC721Received(msg.sender, _from, _tokenId, _data) returns (bytes4) {} catch (
+  686                  bytes memory reason
+  687              ) {
+  688                  if (reason.length == 0) {
+  689                      revert('ERC721: transfer to non ERC721Receiver implementer');
+  690                  } else {
+  691                      assembly {
+  692                          revert(add(32, reason), mload(reason))
+  693                      }
+  694                  }
+  695              }
+  696          }
+  697      }
+
+--- L914-L947 ---
+  914      function _deposit_for(
+  915          uint _tokenId,
+  916          uint _value,
+  917          uint unlock_time,
+  918          LockedBalance memory locked_balance,
+  919          DepositType deposit_type
+  920      ) internal {
+  921          LockedBalance memory _locked = locked_balance;
+  922          uint supply_before = supply;
+  923  
+  924          supply = supply_before + _value;
+  925          LockedBalance memory old_locked;
+  926          (old_locked.amount, old_locked.end) = (_locked.amount, _locked.end);
+  927                                                                                  
+  928          _locked.amount += int128(int256(_value));
+  929          if (unlock_time != 0) {
+  930              _locked.end = unlock_time;
+  931          }
+  932          locked[_tokenId] = _locked;
+  933  
+  934                           
+  935                                                                                  
+  936                                                                               
+  937                                                   
+  938          _checkpoint(_tokenId, old_locked, _locked);
+  939  
+  940          address from = msg.sender;
+  941          if (_value != 0 && deposit_type != DepositType.MERGE_TYPE) {
+  942              assert(IERC20(token).transferFrom(from, address(this), _value));
+  943          }
+  944  
+  945          emit Deposit(from, _tokenId, _value, _locked.end, deposit_type, block.timestamp);
+  946          emit Supply(supply_before, supply_before + _value);
+  947      }
+
+--- L1080-L1104 ---
+ 1080      function withdraw(uint _tokenId) external nonreentrant {
+ 1081          assert(_isApprovedOrOwner(msg.sender, _tokenId));
+ 1082          require(attachments[_tokenId] == 0 && !voted[_tokenId], "attached");
+ 1083  
+ 1084          LockedBalance memory _locked = locked[_tokenId];
+ 1085          require(block.timestamp >= _locked.end, "The lock didn't expire");
+ 1086          uint value = uint(int256(_locked.amount));
+ 1087  
+ 1088          locked[_tokenId] = LockedBalance(0,0);
+ 1089          uint supply_before = supply;
+ 1090          supply = supply_before - value;
+ 1091  
+ 1092                                                                        
+ 1093                                   
+ 1094                                      
+ 1095          _checkpoint(_tokenId, _locked, LockedBalance(0,0));
+ 1096                                           
+ 1097          assert(IERC20(token).transfer(msg.sender, value));
+ 1098  
+ 1099                         
+ 1100          _burn(_tokenId);
+ 1101  
+ 1102          emit Withdraw(msg.sender, _tokenId, value, block.timestamp);
+ 1103          emit Supply(supply_before, supply_before - value);
+ 1104      }
+
+--- L1100-L1107 ---
+ 1100          _burn(_tokenId);
+ 1101  
+ 1102          emit Withdraw(msg.sender, _tokenId, value, block.timestamp);
+ 1103          emit Supply(supply_before, supply_before - value);
+ 1104      }
+ 1105  
+ 1106                                                                                         
+ 1107                                                                                    

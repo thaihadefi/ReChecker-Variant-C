@@ -1,0 +1,54 @@
+# 72 masterchef.sol label=1
+# DAppSCAN-source/contracts/PeckShield-KaoyaSwap/contracts-8273073f1d6914f372790399378f177573c52e37/masterchef.sol
+
+--- L197-L209 ---
+  197      function deposit(uint256 _pid, uint256 _amount) public {
+  198          PoolInfo storage pool = poolInfo[_pid];
+  199          UserInfo storage user = userInfo[_pid][msg.sender];
+  200          updatePool(_pid);
+  201          if (user.amount > 0) {
+  202              uint256 pending = user.amount.mul(pool.accKaoyaPerShare).div(1e12).sub(user.rewardDebt);
+  203              safeKaoyaTransfer(msg.sender, pending);
+  204          }
+  205          pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
+  206          user.amount = user.amount.add(_amount);
+  207          user.rewardDebt = user.amount.mul(pool.accKaoyaPerShare).div(1e12);
+  208          emit Deposit(msg.sender, _pid, _amount);
+  209      }
+
+--- L198-L198 ---
+  198          PoolInfo storage pool = poolInfo[_pid];
+
+--- L212-L223 ---
+  212      function withdraw(uint256 _pid, uint256 _amount) public {
+  213          PoolInfo storage pool = poolInfo[_pid];
+  214          UserInfo storage user = userInfo[_pid][msg.sender];
+  215          require(user.amount >= _amount, "withdraw: not good");
+  216          updatePool(_pid);
+  217          uint256 pending = user.amount.mul(pool.accKaoyaPerShare).div(1e12).sub(user.rewardDebt);
+  218          safeKaoyaTransfer(msg.sender, pending);
+  219          user.amount = user.amount.sub(_amount);
+  220          user.rewardDebt = user.amount.mul(pool.accKaoyaPerShare).div(1e12);
+  221          pool.lpToken.safeTransfer(address(msg.sender), _amount);
+  222          emit Withdraw(msg.sender, _pid, _amount);
+  223      }
+
+--- L226-L233 ---
+  226      function emergencyWithdraw(uint256 _pid) public {
+  227          PoolInfo storage pool = poolInfo[_pid];
+  228          UserInfo storage user = userInfo[_pid][msg.sender];
+  229          pool.lpToken.safeTransfer(address(msg.sender), user.amount);
+  230          emit EmergencyWithdraw(msg.sender, _pid, user.amount);
+  231          user.amount = 0;
+  232          user.rewardDebt = 0;
+  233      }
+
+--- L236-L243 ---
+  236      function safeKaoyaTransfer(address _to, uint256 _amount) internal {
+  237          uint256 kaoyaBal = kaoya.balanceOf(address(this));
+  238          if (_amount > kaoyaBal) {
+  239              kaoya.transfer(_to, kaoyaBal);
+  240          } else {
+  241              kaoya.transfer(_to, _amount);
+  242          }
+  243      }

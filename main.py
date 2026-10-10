@@ -31,6 +31,12 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--hidden-units", type=int, default=300)
     parser.add_argument("--dense-units", type=int, default=300)
     parser.add_argument("--dropout", type=float, default=0.2)
+    parser.add_argument(
+        "--token-dropout",
+        type=float,
+        default=0.0,
+        help="training-time probability of zeroing a whole token vector",
+    )
     parser.add_argument("--learning-rate", type=float, default=0.002)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--epochs", type=int, default=40)
@@ -66,6 +72,7 @@ def _config(args: argparse.Namespace) -> ExperimentConfig:
         hidden_units=args.hidden_units,
         dense_units=args.dense_units,
         dropout=args.dropout,
+        token_dropout=args.token_dropout,
         learning_rate=args.learning_rate,
         batch_size=args.batch_size,
         epochs=args.epochs,

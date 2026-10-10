@@ -1,0 +1,22 @@
+# 71 LimitOrderProtocol.sol label=1
+# DAppSCAN-source/contracts/QuillAudits-1inch-Limit Order Protocol/limit-order-protocol-a14bde6a260458de5083cee117d734221e1cbc05/contracts/LimitOrderProtocol.sol
+
+--- L28-L28 ---
+   28      AmountCalculator,
+
+--- L140-L154 ---
+  140      function simulateCalls(address[] calldata targets, bytes[] calldata data) external {
+  141          require(targets.length == data.length, "LOP: array size mismatch");
+  142          bytes memory reason = new bytes(targets.length);
+  143          for (uint i = 0; i < targets.length; i++) {
+  144                                                                
+  145              (bool success, bytes memory result) = targets[i].call(data[i]);
+  146              if (success && result.length > 0) {
+  147                  success = abi.decode(result, (bool));
+  148              }
+  149              reason[i] = success ? bytes1("1") : bytes1("0");
+  150          }
+  151  
+  152                                                       
+  153          revert(string(abi.encodePacked("CALL_RESULTS_", reason)));
+  154      }

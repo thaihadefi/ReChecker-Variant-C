@@ -39,6 +39,19 @@ class ModelSmokeTests(unittest.TestCase):
         self.assertEqual(output.shape, (2, 2))
         np.testing.assert_allclose(output.sum(axis=1), 1.0, atol=1e-6)
 
+    def test_token_dropout_is_inactive_at_inference(self):
+        config = ExperimentConfig(
+            max_len=6, vector_dim=8, hidden_units=4, dense_units=4, token_dropout=0.5
+        )
+        model = build_model(config, VARIANTS["b3"])
+        self.assertIn("token_dropout", [layer.name for layer in model.layers])
+        vectors = np.ones((2, 6, 8), dtype=np.float32)
+        segments = np.full((2, 6), 3, dtype=np.int32)
+        segments[:, :3] = [0, 2, 1]
+        first = model.predict([vectors, segments], verbose=0)
+        second = model.predict([vectors, segments], verbose=0)
+        np.testing.assert_allclose(first, second, atol=1e-6)
+
     def test_baseline_padding_values_do_not_change_prediction(self):
         model = build_model(self.config, VARIANTS["b0"])
         vectors = np.zeros((2, 6, 8), dtype=np.float32)

@@ -1,0 +1,46 @@
+{
+  "sample": {
+    "positives": 20,
+    "negatives": 20,
+    "seed": 2026
+  },
+  "positives": {
+    "confirmed": 8,
+    "weak": 7,
+    "wrong": 5
+  },
+  "negatives": {
+    "clean": 18,
+    "borderline": 2,
+    "wrong": 0
+  },
+  "clear_noise_positive_rate": [
+    0.25,
+    [
+      0.1119,
+      0.4687
+    ]
+  ],
+  "clear_noise_negative_rate": [
+    0.0,
+    [
+      -0.0,
+      0.1611
+    ]
+  ],
+  "clear_noise_overall_sample": [
+    0.125,
+    [
+      0.0546,
+      0.2611
+    ]
+  ],
+  "clear_noise_weighted_to_2to1_dataset": 0.08333333333333333,
+  "noise_incl_weak_and_borderline_sample": [
+    0.35,
+    [
+      0.2213,
+      0.5049
+    ]
+  ]
+}

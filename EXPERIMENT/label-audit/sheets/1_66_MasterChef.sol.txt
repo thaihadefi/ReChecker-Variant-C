@@ -1,0 +1,121 @@
+# 66 MasterChef.sol label=1
+# DAppSCAN-source/contracts/PeckShield-BabySwap/code/baby-swap-contract-cac289bf978d969c95721c2adb9f199cee72ffa6/contracts/farm/MasterChef.sol
+
+--- L226-L245 ---
+  226      function deposit(uint256 _pid, uint256 _amount) public {
+  227  
+  228          require (_pid != 0, 'deposit CAKE by staking');
+  229  
+  230          PoolInfo storage pool = poolInfo[_pid];
+  231          UserInfo storage user = userInfo[_pid][msg.sender];
+  232          updatePool(_pid);
+  233          if (user.amount > 0) {
+  234              uint256 pending = user.amount.mul(pool.accCakePerShare).div(1e12).sub(user.rewardDebt);
+  235              if(pending > 0) {
+  236                  safeCakeTransfer(msg.sender, pending);
+  237              }
+  238          }
+  239          if (_amount > 0) {
+  240              pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
+  241              user.amount = user.amount.add(_amount);
+  242          }
+  243          user.rewardDebt = user.amount.mul(pool.accCakePerShare).div(1e12);
+  244          emit Deposit(msg.sender, _pid, _amount);
+  245      }
+
+--- L249-L267 ---
+  249      function withdraw(uint256 _pid, uint256 _amount) public {
+  250  
+  251          require (_pid != 0, 'withdraw CAKE by unstaking');
+  252          PoolInfo storage pool = poolInfo[_pid];
+  253          UserInfo storage user = userInfo[_pid][msg.sender];
+  254          require(user.amount >= _amount, "withdraw: not good");
+  255  
+  256          updatePool(_pid);
+  257          uint256 pending = user.amount.mul(pool.accCakePerShare).div(1e12).sub(user.rewardDebt);
+  258          if(pending > 0) {
+  259              safeCakeTransfer(msg.sender, pending);
+  260          }
+  261          if(_amount > 0) {
+  262              user.amount = user.amount.sub(_amount);
+  263              pool.lpToken.safeTransfer(address(msg.sender), _amount);
+  264          }
+  265          user.rewardDebt = user.amount.mul(pool.accCakePerShare).div(1e12);
+  266          emit Withdraw(msg.sender, _pid, _amount);
+  267      }
+
+--- L250-L268 ---
+  250  
+  251          require (_pid != 0, 'withdraw CAKE by unstaking');
+  252          PoolInfo storage pool = poolInfo[_pid];
+  253          UserInfo storage user = userInfo[_pid][msg.sender];
+  254          require(user.amount >= _amount, "withdraw: not good");
+  255  
+  256          updatePool(_pid);
+  257          uint256 pending = user.amount.mul(pool.accCakePerShare).div(1e12).sub(user.rewardDebt);
+  258          if(pending > 0) {
+  259              safeCakeTransfer(msg.sender, pending);
+  260          }
+  261          if(_amount > 0) {
+  262              user.amount = user.amount.sub(_amount);
+  263              pool.lpToken.safeTransfer(address(msg.sender), _amount);
+  264          }
+  265          user.rewardDebt = user.amount.mul(pool.accCakePerShare).div(1e12);
+  266          emit Withdraw(msg.sender, _pid, _amount);
+  267      }
+  268  
+
+--- L270-L288 ---
+  270      function enterStaking(uint256 _amount) public {
+  271          PoolInfo storage pool = poolInfo[0];
+  272          UserInfo storage user = userInfo[0][msg.sender];
+  273          updatePool(0);
+  274          if (user.amount > 0) {
+  275              uint256 pending = user.amount.mul(pool.accCakePerShare).div(1e12).sub(user.rewardDebt);
+  276              if(pending > 0) {
+  277                  safeCakeTransfer(msg.sender, pending);
+  278              }
+  279          }
+  280          if(_amount > 0) {
+  281              pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
+  282              user.amount = user.amount.add(_amount);
+  283          }
+  284          user.rewardDebt = user.amount.mul(pool.accCakePerShare).div(1e12);
+  285  
+  286          syrup.mint(msg.sender, _amount);
+  287          emit Deposit(msg.sender, 0, _amount);
+  288      }
+
+--- L291-L308 ---
+  291      function leaveStaking(uint256 _amount) public {
+  292          PoolInfo storage pool = poolInfo[0];
+  293          UserInfo storage user = userInfo[0][msg.sender];
+  294          require(user.amount >= _amount, "withdraw: not good");
+  295          updatePool(0);
+  296          uint256 pending = user.amount.mul(pool.accCakePerShare).div(1e12).sub(user.rewardDebt);
+  297          if(pending > 0) {
+  298              safeCakeTransfer(msg.sender, pending);
+  299          }
+  300          if(_amount > 0) {
+  301              user.amount = user.amount.sub(_amount);
+  302              pool.lpToken.safeTransfer(address(msg.sender), _amount);
+  303          }
+  304          user.rewardDebt = user.amount.mul(pool.accCakePerShare).div(1e12);
+  305  
+  306          syrup.burn(msg.sender, _amount);
+  307          emit Withdraw(msg.sender, 0, _amount);
+  308      }
+
+--- L311-L322 ---
+  311      function emergencyWithdraw(uint256 _pid) public {
+  312          PoolInfo storage pool = poolInfo[_pid];
+  313          UserInfo storage user = userInfo[_pid][msg.sender];
+  314          uint amount = user.amount;
+  315          user.amount = 0;
+  316          user.rewardDebt = 0;
+  317          pool.lpToken.safeTransfer(address(msg.sender), amount);
+  318          if (_pid == 0) {
+  319              syrup.burn(msg.sender, amount);
+  320          }
+  321          emit EmergencyWithdraw(msg.sender, _pid, amount);
+  322      }

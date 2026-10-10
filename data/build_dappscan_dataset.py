@@ -100,18 +100,13 @@ def _is_safe_fragment(lines: list[str]) -> bool:
     return not any(set(line.strip()) == {"-"} and len(line.strip()) >= 3 for line in lines)
 
 
-def build_dataset(
-    dappscan_root: Path, output_path: Path, neg_ratio: float, seed: int
-) -> dict[str, int]:
-    positive, negative = _classify(dappscan_root)
-    sample_count = min(len(negative), round(neg_ratio * len(positive)))
-    negative = random.Random(seed).sample(negative, sample_count)
-
+def write_gadgets(labeled_paths: list[tuple[int, list[Path]]], output_path: Path) -> tuple[int, int]:
+    """Write comment-stripped source files in the parser's gadget format."""
     written, skipped = 0, 0
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", encoding="utf-8") as out:
         index = 1
-        for label, paths in ((1, positive), (0, negative)):
+        for label, paths in labeled_paths:
             for path in paths:
                 try:
                     text = path.read_text(encoding="utf-8", errors="ignore")
@@ -128,6 +123,16 @@ def build_dataset(
                 out.write(SEPARATOR + "\n")
                 index += 1
                 written += 1
+    return written, skipped
+
+
+def build_dataset(
+    dappscan_root: Path, output_path: Path, neg_ratio: float, seed: int
+) -> dict[str, int]:
+    positive, negative = _classify(dappscan_root)
+    sample_count = min(len(negative), round(neg_ratio * len(positive)))
+    negative = random.Random(seed).sample(negative, sample_count)
+    written, skipped = write_gadgets([(1, positive), (0, negative)], output_path)
     return {
         "positive_available": len(positive),
         "negative_available": len(negative) + skipped,

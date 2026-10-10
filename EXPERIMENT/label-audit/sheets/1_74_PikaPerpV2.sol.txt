@@ -1,0 +1,461 @@
+# 74 PikaPerpV2.sol label=1
+# DAppSCAN-source/contracts/PeckShield-PikaPerpV2/PikaPerpV2-4a0965ff90ed099b7e2d3e8dda47cd589ee8e3a2/contracts/perp/PikaPerpV2.sol
+
+--- L216-L248 ---
+  216      function stake(uint256 amount) external payable nonReentrant {
+  217          require(canUserStake || msg.sender == owner, "!stake");
+  218          address user = msg.sender;
+  219          IVaultReward(vaultRewardDistributor).updateReward(user);
+  220          IVaultReward(vaultTokenReward).updateReward(user);
+  221          IERC20(token).uniTransferFromSenderToThis(amount.mul(tokenBase).div(BASE));
+  222          require(amount >= minMargin, "!margin");
+  223          require(uint256(vault.staked) + amount <= uint256(vault.cap), "!cap");
+  224          uint256 shares = vault.staked > 0 ? amount.mul(uint256(vault.shares)).div(uint256(vault.balance)) : amount;
+  225          vault.balance += uint96(amount);
+  226          vault.staked += uint64(amount);
+  227          vault.shares += uint64(shares);
+  228  
+  229          if (stakes[user].amount == 0) {
+  230              stakes[user] = Stake({
+  231              owner: user,
+  232              amount: uint64(amount),
+  233              shares: uint64(shares),
+  234              timestamp: uint32(block.timestamp)
+  235              });
+  236          } else {
+  237              stakes[user].amount += uint64(amount);
+  238              stakes[user].shares += uint64(shares);
+  239              stakes[user].timestamp = uint32(block.timestamp);
+  240          }
+  241  
+  242          emit Staked(
+  243              user,
+  244              amount,
+  245              shares
+  246          );
+  247  
+  248      }
+
+--- L251-L295 ---
+  251      function redeem(
+  252          uint256 shares
+  253      ) external {
+  254  
+  255          require(shares <= uint256(vault.shares), "!staked");
+  256  
+  257          address user = msg.sender;
+  258          IVaultReward(vaultRewardDistributor).updateReward(user);
+  259          IVaultReward(vaultTokenReward).updateReward(user);
+  260          Stake storage _stake = stakes[user];
+  261          bool isFullRedeem = shares >= uint256(_stake.shares);
+  262          if (isFullRedeem) {
+  263              shares = uint256(_stake.shares);
+  264          }
+  265  
+  266          if (user != owner) {
+  267              uint256 timeDiff = block.timestamp.sub(uint256(_stake.timestamp));
+  268              require(timeDiff > uint256(vault.stakingPeriod), "!period");
+  269          }
+  270  
+  271          uint256 shareBalance = shares.mul(uint256(vault.balance)).div(uint256(vault.shares));
+  272  
+  273          uint256 amount = shares.mul(_stake.amount).div(uint256(_stake.shares));
+  274  
+  275          _stake.amount -= uint64(amount);
+  276          _stake.shares -= uint64(shares);
+  277          vault.staked -= uint64(amount);
+  278          vault.shares -= uint64(shares);
+  279          vault.balance -= uint96(shareBalance);
+  280  
+  281          require(totalOpenInterest <= uint256(vault.balance).mul(utilizationMultiplier).div(10**4), "!utilized");
+  282  
+  283          if (isFullRedeem) {
+  284              delete stakes[user];
+  285          }
+  286          IERC20(token).uniTransfer(user, shareBalance.mul(tokenBase).div(BASE));
+  287  
+  288          emit Redeemed(
+  289              user,
+  290              amount,
+  291              shares,
+  292              shareBalance,
+  293              isFullRedeem
+  294          );
+  295      }
+
+--- L298-L359 ---
+  298      function openPosition(
+  299          uint256 productId,
+  300          uint256 margin,
+  301          bool isLong,
+  302          uint256 leverage
+  303      ) external payable nonReentrant returns(uint256 positionId) {
+  304                         
+  305          require(margin >= minMargin, "!margin");
+  306          require(leverage >= 1 * BASE, "!leverage");
+  307  
+  308                          
+  309          Product storage product = products[productId];
+  310          require(product.isActive, "!product-active");
+  311          require(leverage <= uint256(product.maxLeverage), "!max-leverage");
+  312  
+  313                                     
+  314          uint256 tradeFee = _getTradeFee(margin, leverage, uint256(product.fee));
+  315          IERC20(token).uniTransferFromSenderToThis((margin.add(tradeFee)).mul(tokenBase).div(BASE));
+  316          pendingProtocolReward = pendingProtocolReward.add(tradeFee.mul(protocolRewardRatio).div(10**4));
+  317          pendingPikaReward = pendingPikaReward.add(tradeFee.mul(pikaRewardRatio).div(10**4));
+  318          pendingVaultReward = pendingVaultReward.add(tradeFee.mul(10**4 - protocolRewardRatio - pikaRewardRatio).div(10**4));
+  319  
+  320                           
+  321          uint256 amount = margin.mul(leverage).div(BASE);
+  322          uint256 price = _calculatePrice(product.feed, isLong, product.openInterestLong,
+  323              product.openInterestShort, uint256(vault.balance).mul(uint256(product.weight)).div(uint256(totalWeight)),
+  324              uint256(product.reserve), amount);
+  325  
+  326          _updateOpenInterest(productId, amount, isLong, true);
+  327  
+  328          positionId = getPositionId(msg.sender, productId, isLong);
+  329          Position storage position = positions[positionId];
+  330          if (position.margin > 0) {
+  331              price = (uint256(position.margin).mul(position.leverage).mul(uint256(position.price)).add(margin.mul(leverage).mul(price))).div(
+  332                  uint256(position.margin).mul(position.leverage).add(margin.mul(leverage)));
+  333              leverage = (uint256(position.margin).mul(uint256(position.leverage)).add(margin.mul(leverage))).div(uint256(position.margin).add(margin));
+  334              margin = uint256(position.margin).add(margin);
+  335          }
+  336          require(margin < maxPositionMargin, "!max margin");
+  337  
+  338          positions[positionId] = Position({
+  339          owner: msg.sender,
+  340          productId: uint64(productId),
+  341          margin: uint64(margin),
+  342          leverage: uint64(leverage),
+  343          price: uint64(price),
+  344          oraclePrice: uint64(IOracle(oracle).getPrice(product.feed)),
+  345          timestamp: uint80(block.timestamp),
+  346          isLong: isLong
+  347          });
+  348          emit NewPosition(
+  349              positionId,
+  350              msg.sender,
+  351              productId,
+  352              isLong,
+  353              price,
+  354              IOracle(oracle).getPrice(product.feed),
+  355              margin,
+  356              leverage,
+  357              tradeFee
+  358          );
+  359      }
+
+--- L362-L389 ---
+  362      function addMargin(uint256 positionId, uint256 margin) external payable nonReentrant {
+  363  
+  364          IERC20(token).uniTransferFromSenderToThis(margin.mul(tokenBase).div(BASE));
+  365  
+  366                         
+  367          require(margin >= minMargin, "!margin");
+  368  
+  369                           
+  370          Position storage position = positions[positionId];
+  371          require(msg.sender == position.owner, "!owner");
+  372  
+  373                                
+  374          uint256 newMargin = uint256(position.margin).add(margin);
+  375          uint256 newLeverage = uint256(position.leverage).mul(uint256(position.margin)).div(newMargin);
+  376          require(newLeverage >= 1 * BASE, "!low-leverage");
+  377  
+  378          position.margin = uint64(newMargin);
+  379          position.leverage = uint64(newLeverage);
+  380  
+  381          emit AddMargin(
+  382              positionId,
+  383              position.owner,
+  384              margin,
+  385              newMargin,
+  386              newLeverage
+  387          );
+  388  
+  389      }
+
+--- L402-L459 ---
+  402      function closePositionWithId(
+  403          uint256 positionId,
+  404          uint256 margin
+  405      ) public {
+  406                         
+  407          require(margin >= minMargin, "!margin");
+  408  
+  409                           
+  410          Position storage position = positions[positionId];
+  411          require(msg.sender == position.owner, "!owner");
+  412  
+  413                          
+  414          Product storage product = products[uint256(position.productId)];
+  415  
+  416          bool isFullClose;
+  417          if (margin >= uint256(position.margin)) {
+  418              margin = uint256(position.margin);
+  419              isFullClose = true;
+  420          }
+  421          uint256 maxExposure = uint256(vault.balance).mul(uint256(product.weight)).mul(exposureMultiplier).div(uint256(totalWeight)).div(10**4);
+  422          uint256 price = _calculatePrice(product.feed, !position.isLong, product.openInterestLong, product.openInterestShort,
+  423              maxExposure, uint256(product.reserve), margin * position.leverage / 10**8);
+  424  
+  425          bool isLiquidatable;
+  426          int256 pnl = _getPnl(position, margin, price);
+  427          if (pnl < 0 && uint256(-1 * pnl) >= margin.mul(uint256(product.liquidationThreshold)).div(10**4)) {
+  428              margin = uint256(position.margin);
+  429              pnl = -1 * int256(uint256(position.margin));
+  430              isLiquidatable = true;
+  431          } else {
+  432                                                                                                                                                       
+  433              if (pnl > 0 && !_canTakeProfit(position, IOracle(oracle).getPrice(product.feed), product.minPriceChange)) {
+  434                  pnl = 0;
+  435              }
+  436          }
+  437  
+  438          uint256 totalFee = _updateVaultAndGetFee(pnl, position, margin, uint256(product.fee), uint256(product.interest));
+  439          _updateOpenInterest(uint256(position.productId), margin.mul(uint256(position.leverage)).div(BASE), position.isLong, false);
+  440  
+  441          emit ClosePosition(
+  442              positionId,
+  443              position.owner,
+  444              uint256(position.productId),
+  445              price,
+  446              uint256(position.price),
+  447              margin,
+  448              uint256(position.leverage),
+  449              totalFee,
+  450              pnl,
+  451              isLiquidatable
+  452          );
+  453  
+  454          if (isFullClose) {
+  455              delete positions[positionId];
+  456          } else {
+  457              position.margin -= uint64(margin);
+  458          }
+  459      }
+
+--- L403-L460 ---
+  403          uint256 positionId,
+  404          uint256 margin
+  405      ) public {
+  406                         
+  407          require(margin >= minMargin, "!margin");
+  408  
+  409                           
+  410          Position storage position = positions[positionId];
+  411          require(msg.sender == position.owner, "!owner");
+  412  
+  413                          
+  414          Product storage product = products[uint256(position.productId)];
+  415  
+  416          bool isFullClose;
+  417          if (margin >= uint256(position.margin)) {
+  418              margin = uint256(position.margin);
+  419              isFullClose = true;
+  420          }
+  421          uint256 maxExposure = uint256(vault.balance).mul(uint256(product.weight)).mul(exposureMultiplier).div(uint256(totalWeight)).div(10**4);
+  422          uint256 price = _calculatePrice(product.feed, !position.isLong, product.openInterestLong, product.openInterestShort,
+  423              maxExposure, uint256(product.reserve), margin * position.leverage / 10**8);
+  424  
+  425          bool isLiquidatable;
+  426          int256 pnl = _getPnl(position, margin, price);
+  427          if (pnl < 0 && uint256(-1 * pnl) >= margin.mul(uint256(product.liquidationThreshold)).div(10**4)) {
+  428              margin = uint256(position.margin);
+  429              pnl = -1 * int256(uint256(position.margin));
+  430              isLiquidatable = true;
+  431          } else {
+  432                                                                                                                                                       
+  433              if (pnl > 0 && !_canTakeProfit(position, IOracle(oracle).getPrice(product.feed), product.minPriceChange)) {
+  434                  pnl = 0;
+  435              }
+  436          }
+  437  
+  438          uint256 totalFee = _updateVaultAndGetFee(pnl, position, margin, uint256(product.fee), uint256(product.interest));
+  439          _updateOpenInterest(uint256(position.productId), margin.mul(uint256(position.leverage)).div(BASE), position.isLong, false);
+  440  
+  441          emit ClosePosition(
+  442              positionId,
+  443              position.owner,
+  444              uint256(position.productId),
+  445              price,
+  446              uint256(position.price),
+  447              margin,
+  448              uint256(position.leverage),
+  449              totalFee,
+  450              pnl,
+  451              isLiquidatable
+  452          );
+  453  
+  454          if (isFullClose) {
+  455              delete positions[positionId];
+  456          } else {
+  457              position.margin -= uint64(margin);
+  458          }
+  459      }
+  460  
+
+--- L461-L496 ---
+  461      function _updateVaultAndGetFee(
+  462          int256 pnl,
+  463          Position memory position,
+  464          uint256 margin,
+  465          uint256 fee,
+  466          uint256 interest
+  467      ) internal returns(uint256) {
+  468  
+  469          (int256 pnlAfterFee, uint256 totalFee) = _getPnlWithFee(pnl, position, margin, fee, interest);
+  470                         
+  471          if (pnlAfterFee < 0) {
+  472              uint256 _pnlAfterFee = uint256(-1 * pnlAfterFee);
+  473              if (_pnlAfterFee < margin) {
+  474                  IERC20(token).uniTransfer(position.owner, (margin.sub(_pnlAfterFee)).mul(tokenBase).div(BASE));
+  475                  vault.balance += uint96(_pnlAfterFee);
+  476              } else {
+  477                  vault.balance += uint96(margin);
+  478                  return totalFee;
+  479              }
+  480  
+  481          } else {
+  482              uint256 _pnlAfterFee = uint256(pnlAfterFee);
+  483                            
+  484              require(uint256(vault.balance) >= _pnlAfterFee, "!vault-insufficient");
+  485              vault.balance -= uint96(_pnlAfterFee);
+  486  
+  487              IERC20(token).uniTransfer(position.owner, (margin.add(_pnlAfterFee)).mul(tokenBase).div(BASE));
+  488          }
+  489  
+  490          pendingProtocolReward = pendingProtocolReward.add(totalFee.mul(protocolRewardRatio).div(10**4));
+  491          pendingPikaReward = pendingPikaReward.add(totalFee.mul(pikaRewardRatio).div(10**4));
+  492          pendingVaultReward = pendingVaultReward.add(totalFee.mul(10**4 - protocolRewardRatio - pikaRewardRatio).div(10**4));
+  493          vault.balance -= uint96(totalFee);
+  494  
+  495          return totalFee;
+  496      }
+
+--- L498-L526 ---
+  498      function releaseMargin(uint256 positionId) external onlyOwner {
+  499  
+  500          Position storage position = positions[positionId];
+  501          require(position.margin > 0, "!position");
+  502  
+  503          uint256 margin = position.margin;
+  504          address positionOwner = position.owner;
+  505  
+  506          uint256 amount = margin.mul(uint256(position.leverage)).div(10**8);
+  507  
+  508          _updateOpenInterest(uint256(position.productId), amount, position.isLong, false);
+  509  
+  510          emit ClosePosition(
+  511              positionId,
+  512              positionOwner,
+  513              position.productId,
+  514              position.price,
+  515              position.price,
+  516              margin,
+  517              position.leverage,
+  518              0,
+  519              0,
+  520              false
+  521          );
+  522  
+  523          delete positions[positionId];
+  524  
+  525          IERC20(token).uniTransfer(positionOwner, margin.mul(tokenBase).div(BASE));
+  526      }
+
+--- L530-L542 ---
+  530      function liquidatePositions(uint256[] calldata positionIds) external {
+  531          require(msg.sender == liquidator || allowPublicLiquidator, "!liquidator");
+  532  
+  533          uint256 totalLiquidatorReward;
+  534          for (uint256 i = 0; i < positionIds.length; i++) {
+  535              uint256 positionId = positionIds[i];
+  536              uint256 liquidatorReward = liquidatePosition(positionId);
+  537              totalLiquidatorReward = totalLiquidatorReward.add(liquidatorReward);
+  538          }
+  539          if (totalLiquidatorReward > 0) {
+  540              IERC20(token).uniTransfer(msg.sender, totalLiquidatorReward.mul(tokenBase).div(BASE));
+  541          }
+  542      }
+
+--- L545-L597 ---
+  545      function liquidatePosition(
+  546          uint256 positionId
+  547      ) internal returns(uint256 liquidatorReward) {
+  548          Position storage position = positions[positionId];
+  549          if (position.productId == 0) {
+  550              return 0;
+  551          }
+  552          Product storage product = products[uint256(position.productId)];
+  553          uint256 price = IOracle(oracle).getPrice(product.feed);                                    
+  554  
+  555          uint256 remainingReward;
+  556          if (_checkLiquidation(position, price, uint256(product.liquidationThreshold))) {
+  557              int256 pnl = _getPnl(position, position.margin, price);
+  558              if (pnl < 0 && uint256(position.margin) > uint256(-1*pnl)) {
+  559                  uint256 _pnl = uint256(-1*pnl);
+  560                  liquidatorReward = (uint256(position.margin).sub(_pnl)).mul(uint256(product.liquidationBounty)).div(10**4);
+  561                  remainingReward = (uint256(position.margin).sub(_pnl).sub(liquidatorReward));
+  562                  pendingProtocolReward = pendingProtocolReward.add(remainingReward.mul(protocolRewardRatio).div(10**4));
+  563                  pendingPikaReward = pendingPikaReward.add(remainingReward.mul(pikaRewardRatio).div(10**4));
+  564                  pendingVaultReward = pendingVaultReward.add(remainingReward.mul(10**4 - protocolRewardRatio - pikaRewardRatio).div(10**4));
+  565                  vault.balance += uint96(_pnl);
+  566              } else {
+  567                  vault.balance += uint96(position.margin);
+  568              }
+  569  
+  570              uint256 amount = uint256(position.margin).mul(uint256(position.leverage)).div(BASE);
+  571  
+  572              _updateOpenInterest(uint256(position.productId), amount, position.isLong, false);
+  573  
+  574              emit ClosePosition(
+  575                  positionId,
+  576                  position.owner,
+  577                  uint256(position.productId),
+  578                  price,
+  579                  uint256(position.price),
+  580                  uint256(position.margin),
+  581                  uint256(position.leverage),
+  582                  0,
+  583                  int256(uint256(position.margin)),
+  584                  true
+  585              );
+  586  
+  587              delete positions[positionId];
+  588  
+  589              emit PositionLiquidated(
+  590                  positionId,
+  591                  msg.sender,
+  592                  liquidatorReward,
+  593                  remainingReward
+  594              );
+  595          }
+  596          return liquidatorReward;
+  597      }
+
+--- L630-L639 ---
+  630      function distributeProtocolReward() external returns(uint256) {
+  631          require(msg.sender == protocolRewardDistributor, "!distributor");
+  632          uint256 _pendingProtocolReward = pendingProtocolReward;
+  633          if (pendingProtocolReward > 0) {
+  634              pendingProtocolReward = 0;
+  635              IERC20(token).uniTransfer(protocolRewardDistributor, _pendingProtocolReward.mul(tokenBase).div(BASE));
+  636              emit ProtocolRewardDistributed(protocolRewardDistributor, _pendingProtocolReward.mul(tokenBase).div(BASE));
+  637          }
+  638          return _pendingProtocolReward.mul(tokenBase).div(BASE);
+  639      }
+
+--- L641-L650 ---
+  641      function distributePikaReward() external returns(uint256) {
+  642          require(msg.sender == pikaRewardDistributor, "!distributor");
+  643          uint256 _pendingPikaReward = pendingPikaReward;
+  644          if (pendingPikaReward > 0) {
+  645              pendingPikaReward = 0;
+  646              IERC20(token).uniTransfer(pikaRewardDistributor, _pendingPikaReward.mul(tokenBase).div(BASE));
+  647              emit PikaRewardDistributed(pikaRewardDistributor, _pendingPikaReward.mul(tokenBase).div(BASE));
+  648          }
+  649          return _pendingPikaReward.mul(tokenBase).div(BASE);
+  650      }

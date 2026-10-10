@@ -1,0 +1,30 @@
+# 143 Swap.sol label=0
+# DAppSCAN-source/contracts/PeckShield-AirSwap/airswap-protocols-b87d292aaf6e28ede564b7ea28ece39219994607/source/swap/contracts/Swap.sol
+
+--- L327-L352 ---
+  327    function transferToken(
+  328        address from,
+  329        address to,
+  330        uint256 param,
+  331        address token,
+  332        bytes4 kind
+  333    ) internal {
+  334  
+  335                                            
+  336      require(from != to, "INVALID_SELF_TRANSFER");
+  337  
+  338      if (kind == ERC721_INTERFACE_ID) {
+  339  
+  340                                                
+  341        IERC721(token).transferFrom(from, to, param);
+  342  
+  343      } else {
+  344        uint256 initialBalance = INRERC20(token).balanceOf(from);
+  345  
+  346                                               
+  347        INRERC20(token).transferFrom(from, to, param);
+  348  
+  349                                                  
+  350        require(initialBalance.sub(param) == INRERC20(token).balanceOf(from), "TRANSFER_FAILED");
+  351      }
+  352    }

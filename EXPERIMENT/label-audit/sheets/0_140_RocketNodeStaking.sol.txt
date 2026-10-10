@@ -1,0 +1,23 @@
+# 140 RocketNodeStaking.sol label=0
+# DAppSCAN-source/contracts/consensys-Rocketpool/rocketpool-2.5-Tokenomics-updates/contracts/contract/node/RocketNodeStaking.sol
+
+--- L139-L157 ---
+  139      function stakeRPL(uint256 _amount) override external onlyLatestContract("rocketNodeStaking", address(this)) onlyRegisteredNode(msg.sender) {
+  140                           
+  141          address rplTokenAddress = getContractAddress("rocketTokenRPL");
+  142          address rocketVaultAddress = getContractAddress("rocketVault");
+  143          IERC20 rplToken = IERC20(rplTokenAddress);
+  144          RocketVaultInterface rocketVault = RocketVaultInterface(rocketVaultAddress);
+  145                                
+  146          require(rplToken.transferFrom(msg.sender, address(this), _amount), "Could not transfer RPL to staking contract");
+  147                                        
+  148          require(rplToken.approve(rocketVaultAddress, _amount), "Could not approve vault RPL deposit");
+  149                                                      
+  150          rocketVault.depositToken("rocketNodeStaking", rplTokenAddress, _amount);
+  151                                                             
+  152          increaseTotalRPLStake(_amount);
+  153          increaseNodeRPLStake(msg.sender, _amount);
+  154          setNodeRPLStakedBlock(msg.sender, block.number);
+  155                                  
+  156          emit RPLStaked(msg.sender, _amount, block.timestamp);
+  157      }

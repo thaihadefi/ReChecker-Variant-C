@@ -1,0 +1,48 @@
+# 240 RevomonToken.sol label=0
+# DAppSCAN-source/contracts/Solidity_Finance-RevomonVR Smart Contract/Contracts-9d0da49342a1a87b6cafebd4945612c2cfb8669d/RevomonToken.sol
+
+--- L204-L210 ---
+  204      function sendValue(address payable recipient, uint256 amount) internal {
+  205          require(address(this).balance >= amount, "Address: insufficient balance");
+  206  
+  207                                                                              
+  208          (bool success, ) = recipient.call{ value: amount }("");
+  209          require(success, "Address: unable to send value, recipient may have reverted");
+  210      }
+
+--- L711-L713 ---
+  711      function recoverERC20(address tokenAddress, uint256 tokenAmount) public onlyOwner {
+  712          IERC20(tokenAddress).transfer(owner(), tokenAmount);
+  713      }
+
+--- L876-L884 ---
+  876      function _checkAndCallTransfer(address from, address to, uint256 value, bytes memory data) internal returns (bool) {
+  877          if (!to.isContract()) {
+  878              return false;
+  879          }
+  880          bytes4 retval = IERC1363Receiver(to).onTransferReceived(
+  881              _msgSender(), from, value, data
+  882          );
+  883          return (retval == _ERC1363_RECEIVED);
+  884      }
+
+--- L886-L894 ---
+  886      function _checkAndCallApprove(address spender, uint256 value, bytes memory data) internal returns (bool) {
+  887          if (!spender.isContract()) {
+  888              return false;
+  889          }
+  890          bytes4 retval = IERC1363Spender(spender).onApprovalReceived(
+  891              _msgSender(), value, data
+  892          );
+  893          return (retval == _ERC1363_APPROVED);
+  894      }
+
+--- L964-L966 ---
+  964      function transfer(address to, uint256 value) public virtual override(ERC20) returns (bool) {
+  965          return super.transfer(to, value);
+  966      }
+
+--- L975-L977 ---
+  975      function transferFrom(address from, address to, uint256 value) public virtual override(ERC20) returns (bool) {
+  976          return super.transferFrom(from, to, value);
+  977      }

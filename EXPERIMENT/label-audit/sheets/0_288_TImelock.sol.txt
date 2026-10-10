@@ -1,0 +1,50 @@
+# 288 TImelock.sol label=0
+# DAppSCAN-source/contracts/Inspex-Token & Vesting/MooMonster-Contract-2d07e927e5e8f66afea5cbdfb89b32ef74cfe385/contracts/TImelock.sol
+
+--- L163-L208 ---
+  163    function executeTransaction(
+  164      address target,
+  165      uint256 value,
+  166      string memory signature,
+  167      bytes memory data,
+  168      uint256 eta
+  169    ) external payable returns (bytes memory) {
+  170      require(
+  171        msg.sender == admin,
+  172        "Timelock::executeTransaction: Call must come from admin."
+  173      );
+  174  
+  175      bytes32 txHash = keccak256(abi.encode(target, value, signature, data, eta));
+  176      require(
+  177        queuedTransactions[txHash],
+  178        "Timelock::executeTransaction: Transaction hasn't been queued."
+  179      );
+  180      require(
+  181        getBlockTimestamp() >= eta,
+  182        "Timelock::executeTransaction: Transaction hasn't surpassed time lock."
+  183      );
+  184      require(
+  185        getBlockTimestamp() <= eta + GRACE_PERIOD,
+  186        "Timelock::executeTransaction: Transaction is stale."
+  187      );
+  188  
+  189      queuedTransactions[txHash] = false;
+  190  
+  191      bytes memory callData;
+  192  
+  193      if (bytes(signature).length == 0) {
+  194        callData = data;
+  195      } else {
+  196        callData = abi.encodePacked(bytes4(keccak256(bytes(signature))), data);
+  197      }
+  198  
+  199                                                        
+  200      (bool success, bytes memory returnData) = target.call{ value: value }(
+  201        callData
+  202      );
+  203      require(success, _getRevertMsg(returnData));
+  204  
+  205      emit ExecuteTransaction(txHash, target, value, signature, data, eta);
+  206  
+  207      return returnData;
+  208    }

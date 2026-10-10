@@ -1,0 +1,151 @@
+# 83 HegicPool.sol label=1
+# DAppSCAN-source/contracts/PeckShield-Hegic(v8888)/Hegic-v8888-2dcd44dc1ae07881e94d52fa618f9704bfd4ffda/contracts/Pool/HegicPool.sol
+
+--- L227-L274 ---
+  227      function sellOption(
+  228          address holder,
+  229          uint256 period,
+  230          uint256 amount,
+  231          uint256 strike
+  232      ) external override returns (uint256 id) {
+  233          if (strike == 0) strike = _currentPrice();
+  234          uint256 balance = totalBalance();
+  235          uint256 amountToBeLocked = _calculateLockedAmount(amount);
+  236  
+  237          require(period >= 1 days, "Pool Error: The period is too short");
+  238          require(period <= 90 days, "Pool Error: The period is too long");
+  239          require(
+  240              (lockedAmount + amountToBeLocked) * 100 <=
+  241                  balance * maxUtilizationRate,
+  242              "Pool Error: The amount is too large"
+  243          );
+  244  
+  245          (uint256 settlementFee, uint256 premium) =
+  246              _calculateTotalPremium(period, amount, strike);
+  247          uint256 hedgedPremiumTotal = (premium * hedgedBalance) / balance;
+  248          uint256 hedgeFee = (hedgedPremiumTotal * hedgeFeeRate) / 100;
+  249          uint256 hedgePremium = hedgedPremiumTotal - hedgeFee;
+  250          uint256 unhedgePremium = premium - hedgedPremiumTotal;
+  251  
+  252          lockedAmount += amountToBeLocked;
+  253          id = optionsManager.createOptionFor(holder);
+  254          options[id] = Option(
+  255              OptionState.Active,
+  256              strike,
+  257              amount,
+  258              amountToBeLocked,
+  259              block.timestamp,
+  260              block.timestamp + period,
+  261              hedgePremium,
+  262              unhedgePremium
+  263          );
+  264  
+  265          token.safeTransferFrom(
+  266              _msgSender(),
+  267              address(this),
+  268              premium + settlementFee
+  269          );
+  270  
+  271          settlementFeeRecipient.sendProfits(settlementFee);
+  272          if (hedgeFee > 0) token.safeTransfer(hedgePool, hedgeFee);
+  273          emit Acquired(id, settlementFee, premium);
+  274      }
+
+--- L315-L322 ---
+  315      function _send(address to, uint256 transferAmount) private {
+  316          require(to != address(0));
+  317          uint256 hedgeLoss = (transferAmount * hedgedBalance) / totalBalance();
+  318          uint256 unhedgeLoss = transferAmount - hedgeLoss;
+  319          hedgedBalance -= hedgeLoss;
+  320          unhedgedBalance -= unhedgeLoss;
+  321          token.safeTransfer(to, transferAmount);
+  322      }
+
+--- L373-L409 ---
+  373      function provideFrom(
+  374          address account,
+  375          uint256 amount,
+  376          bool hedged,
+  377          uint256 minShare
+  378      ) external override returns (uint256 share) {
+  379          uint256 totalShare = hedged ? hedgedShare : unhedgedShare;
+  380          uint256 balance = hedged ? hedgedBalance : unhedgedBalance;
+  381          share = totalShare > 0 && balance > 0
+  382              ? (amount * totalShare) / balance
+  383              : amount * INITIAL_RATE;
+  384          uint256 limit =
+  385              hedged
+  386                  ? maxHedgedDepositAmount - hedgedBalance
+  387                  : maxDepositAmount - hedgedBalance - unhedgedBalance;
+  388          require(share >= minShare, "Pool Error: The mint limit is too large");
+  389          require(share > 0, "Pool Error: The amount is too small");
+  390          require(
+  391              amount <= limit,
+  392              "Pool Error: Depositing into the pool is not available"
+  393          );
+  394  
+  395          if (hedged) {
+  396              hedgedShare += share;
+  397              hedgedBalance += amount;
+  398          } else {
+  399              unhedgedShare += share;
+  400              unhedgedBalance += amount;
+  401          }
+  402  
+  403          uint256 trancheID = tranches.length;
+  404          tranches.push(
+  405              Tranche(TrancheState.Open, share, amount, block.timestamp, hedged)
+  406          );
+  407          _safeMint(account, trancheID);
+  408          token.safeTransferFrom(_msgSender(), address(this), amount);
+  409      }
+
+--- L374-L374 ---
+  374          address account,
+
+--- L419-L432 ---
+  419      function withdraw(uint256 trancheID)
+  420          external
+  421          override
+  422          returns (uint256 amount)
+  423      {
+  424          address owner = ownerOf(trancheID);
+  425          Tranche memory t = tranches[trancheID];
+  426          amount = _withdraw(owner, trancheID);
+  427          if (t.hedged && amount < t.amount) {
+  428              token.safeTransferFrom(hedgePool, owner, t.amount - amount);
+  429              amount = t.amount;
+  430          }
+  431          emit Withdrawn(owner, trancheID, amount);
+  432      }
+
+--- L454-L482 ---
+  454      function _withdraw(address owner, uint256 trancheID)
+  455          internal
+  456          returns (uint256 amount)
+  457      {
+  458          Tranche storage t = tranches[trancheID];
+  459          uint256 lockupPeriod =
+  460              t.hedged
+  461                  ? lockupPeriodForHedgedTranches
+  462                  : lockupPeriodForUnhedgedTranches;
+  463          require(t.state == TrancheState.Open);
+  464          require(_isApprovedOrOwner(_msgSender(), trancheID));
+  465          require(
+  466              block.timestamp > t.creationTimestamp + lockupPeriod,
+  467              "Pool Error: The withdrawal is locked up"
+  468          );
+  469  
+  470          t.state = TrancheState.Closed;
+  471          if (t.hedged) {
+  472              amount = (t.share * hedgedBalance) / hedgedShare;
+  473              hedgedShare -= t.share;
+  474              hedgedBalance -= amount;
+  475          } else {
+  476              amount = (t.share * unhedgedBalance) / unhedgedShare;
+  477              unhedgedShare -= t.share;
+  478              unhedgedBalance -= amount;
+  479          }
+  480  
+  481          token.safeTransfer(owner, amount);
+  482      }

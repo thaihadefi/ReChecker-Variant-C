@@ -1,0 +1,23 @@
+# 99 contract.sol label=1
+# DAppSCAN-source/contracts/Callisto_Network-McAfeeDex Security Audit/MCAFEEDEXCONTRACT-5db8389ce23ce11fb273c9573772287aa75ce43b/contract.sol
+
+--- L229-L229 ---
+  229  
+
+--- L230-L236 ---
+  230    function depositToken(address token, uint amount) {
+  231                                                                                                                                  
+  232      if (token==0) throw;
+  233      if (!Token(token).transferFrom(msg.sender, this, amount)) throw;
+  234      tokens[token][msg.sender] = safeAdd(tokens[token][msg.sender], amount);
+  235      Deposit(token, msg.sender, amount, tokens[token][msg.sender]);
+  236    }
+
+--- L238-L244 ---
+  238    function withdrawToken(address token, uint amount) {
+  239      if (token==0) throw;
+  240      if (tokens[token][msg.sender] < amount) throw;
+  241      tokens[token][msg.sender] = safeSub(tokens[token][msg.sender], amount);
+  242      if (!Token(token).transfer(msg.sender, amount)) throw;
+  243      Withdraw(token, msg.sender, amount, tokens[token][msg.sender]);
+  244    }

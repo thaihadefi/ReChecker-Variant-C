@@ -1,0 +1,60 @@
+# 65 SNXFlashLoanTool.sol label=1
+# DAppSCAN-source/contracts/Iosiro-SNX FlashBurn Smart Contract Audit/flashburn-3aa02a3d63d9e0110a5b6669a4a4011ceee3cf2b/packages/contracts/contracts/SNXFlashLoanTool.sol
+
+--- L87-L116 ---
+   87      function executeOperation(
+   88          address[] calldata assets,
+   89          uint256[] calldata amounts,
+   90          uint256[] calldata premiums,
+   91          address initiator,
+   92          bytes calldata params
+   93      ) external override returns (bool) {
+   94          require(msg.sender == address(LENDING_POOL), "SNXFlashLoanTool: Invalid msg.sender");
+   95          require(initiator == address(this), "SNXFlashLoanTool: Invalid initiator");
+   96          (uint256 snxAmount, address user, address exchange, bytes memory exchangeData) = abi.decode(
+   97              params,
+   98              (uint256, address, address, bytes)
+   99          );
+  100                                      
+  101          sUSD.transfer(user, amounts[0]);
+  102                                               
+  103          synthetix.burnSynthsOnBehalf(user, amounts[0]);
+  104                                                    
+  105          snx.safeTransferFrom(user, address(this), snxAmount);
+  106                                                  
+  107          uint256 receivedSUSD = swap(snxAmount, exchange, exchangeData);
+  108                                             
+  109          uint256 amountOwing = amounts[0].add(premiums[0]);
+  110          sUSD.safeApprove(msg.sender, amountOwing);
+  111                                                                                
+  112          if (amountOwing < receivedSUSD) {
+  113              sUSD.safeTransfer(user, receivedSUSD.sub(amountOwing));
+  114          }
+  115          return true;
+  116      }
+
+--- L122-L124 ---
+  122      function transferToken(address token) external onlyOwner {
+  123          IERC20(token).safeTransfer(msg.sender, IERC20(token).balanceOf(address(this)));
+  124      }
+
+--- L131-L146 ---
+  131      function swap(
+  132          uint256 amount,
+  133          address exchange,
+  134          bytes memory data
+  135      ) internal returns (uint256) {
+  136          snx.safeApprove(exchange, amount);
+  137                                                                                                 
+  138          require(
+  139              exchange != address(LENDING_POOL) && exchange != address(synthetix) && exchange != address(snx),
+  140              "SNXFlashLoanTool: Unauthorized address"
+  141          );
+  142                                     
+  143          (bool success, ) = exchange.call(data);
+  144          require(success, "SNXFlashLoanTool: Swap failed");
+  145          return sUSD.balanceOf(address(this));
+  146      }
+
+--- L146-L146 ---
+  146      }

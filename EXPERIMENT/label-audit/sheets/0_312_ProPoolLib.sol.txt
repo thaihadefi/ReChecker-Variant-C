@@ -1,0 +1,124 @@
+# 312 ProPoolLib.sol label=0
+# DAppSCAN-source/contracts/Coinfabrik-EasyPool Smart Contract Security Audit v2/EasyPool-master/contracts/library/ProPoolLib.sol
+
+--- L643-L664 ---
+  643      function getPoolDetails2(Pool storage pool) 
+  644          public view 
+  645          returns (      
+  646              uint refundBalance,
+  647              address refundAddress,
+  648              address[] tokenAddresses,
+  649              uint[] tokenBalances
+  650          )
+  651      {                                                
+  652          if(pool.state == State.Distribution || pool.state == State.FullRefund) {                 
+  653              uint poolRemaining;
+  654              (,poolRemaining,) = calcPoolSummary(pool);
+  655              refundBalance = address(this).balance - poolRemaining;
+  656              refundAddress = pool.refundAddress;
+  657              
+  658              tokenAddresses = pool.tokenAddresses;
+  659              tokenBalances = new uint[](tokenAddresses.length);
+  660              for(uint i = 0; i < tokenAddresses.length; i++) {
+  661                  tokenBalances[i] = IERC20Base(tokenAddresses[i]).balanceOf(address(this));
+  662              }
+  663          }
+  664      }
+
+--- L698-L733 ---
+  698      function getParticipantShares(Pool storage pool, address addr) public view returns (uint[] tokenShare, uint refundShare) {       
+  699          if(pool.state == State.Distribution || pool.state == State.FullRefund) {
+  700              uint netPoolContribution;
+  701              uint netPartContribution;
+  702              uint poolRemaining;
+  703              uint poolCtorFee;   
+  704  
+  705              (netPoolContribution, netPartContribution, poolRemaining, poolCtorFee) = calcPoolSummary3(pool, addr);
+  706              tokenShare = new uint[](pool.tokenAddresses.length);
+  707  
+  708              if(netPartContribution > 0) {
+  709                  refundShare = pool.refundQuota.calcShare(
+  710                      addr, 
+  711                      address(this).balance - poolRemaining,
+  712                      [netPartContribution, netPoolContribution]
+  713                  );        
+  714              }     
+  715  
+  716              if(pool.feeToTokenMode) {
+  717                  netPoolContribution += poolCtorFee;
+  718                  if(pool.feeToTokenAddress == addr) {
+  719                      netPartContribution += poolCtorFee;
+  720                  }
+  721              }  
+  722  
+  723              if(netPartContribution > 0) {
+  724                  for(uint i = 0; i < pool.tokenAddresses.length; i++) {
+  725                      tokenShare[i] = pool.tokenQuota[pool.tokenAddresses[i]].calcShare(
+  726                          addr,
+  727                          IERC20Base(pool.tokenAddresses[i]).balanceOf(address(this)),
+  728                          [netPartContribution, netPoolContribution]
+  729                      );                
+  730                  }      
+  731              }
+  732          }  
+  733      }    
+
+--- L1004-L1052 ---
+ 1004      function withdrawTokens(
+ 1005          Pool storage pool,        
+ 1006          uint netPoolContribution,
+ 1007          uint netPartContribution
+ 1008      )
+ 1009          private 
+ 1010      {
+ 1011          bool succeeded;
+ 1012          uint tokenAmount;
+ 1013          uint tokenBalance;
+ 1014          address tokenAddress;
+ 1015          IERC20Base tokenContract;
+ 1016          QuotaLib.Storage storage quota;
+ 1017  
+ 1018                                                 
+ 1019          uint length = pool.tokenAddresses.length;
+ 1020          for(uint i = 0; i < length; i++) {             
+ 1021  
+ 1022              tokenAddress = pool.tokenAddresses[i];            
+ 1023              tokenContract = IERC20Base(tokenAddress); 
+ 1024                                                        
+ 1025              tokenBalance = tokenContract.balanceOf(address(this));
+ 1026  
+ 1027              if(tokenBalance > 0) {    
+ 1028                                                                                             
+ 1029                  quota = pool.tokenQuota[tokenAddress];
+ 1030                  tokenAmount = quota.claimShare(
+ 1031                      msg.sender,
+ 1032                      tokenBalance, 
+ 1033                      [netPartContribution, netPoolContribution]
+ 1034                  ); 
+ 1035  
+ 1036                  if(tokenAmount > 0) {
+ 1037                                                
+ 1038                      succeeded = tokenContract.transfer(msg.sender, tokenAmount);
+ 1039                      if (!succeeded) {                        
+ 1040                          quota.undoClaimShare(msg.sender, tokenAmount);
+ 1041                      }
+ 1042                      emit TokenWithdrawal(
+ 1043                          tokenAddress,
+ 1044                          msg.sender,
+ 1045                          tokenBalance,
+ 1046                          tokenAmount,
+ 1047                          succeeded
+ 1048                      );
+ 1049                  }
+ 1050              }
+ 1051          } 
+ 1052      }   
+
+--- L1282-L1288 ---
+ 1282      function addressTransfer(address destination, uint etherAmount) private {
+ 1283          emit AddressTransfer(
+ 1284              destination,
+ 1285              etherAmount
+ 1286          );
+ 1287          destination.transfer(etherAmount);        
+ 1288      }

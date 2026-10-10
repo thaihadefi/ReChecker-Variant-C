@@ -1,0 +1,69 @@
+# 176 LTOTokenSale.sol label=0
+# DAppSCAN-source/contracts/QuillAudits-LTO Network-Token Sale/lto-erc20-token-02fa2620aef4c854675230b6544461961d47f968/contracts/LTOTokenSale.sol
+
+--- L170-L201 ---
+  170    function buy() payable public onlyOpenTime {
+  171      require(msg.value >= minimumAmount);
+  172  
+  173      uint256 amount = msg.value;
+  174      PurchaserInfo storage pi = purchaserMapping[msg.sender];
+  175      if (!pi.recorded) {
+  176        pi.recorded = true;
+  177        purchaserList.push(msg.sender);
+  178      }
+  179      uint256 totalAmount = pi.received.add(amount);
+  180      if (totalAmount > maximumCapAmount && !isCapFree(msg.sender)) {
+  181        uint256 recap = totalAmount.sub(maximumCapAmount);
+  182        amount = amount.sub(recap);
+  183        if (amount <= 0) {
+  184          revert();
+  185        } else {
+  186          msg.sender.transfer(recap);
+  187        }
+  188      }
+  189      pi.received = pi.received.add(amount);
+  190  
+  191      globalAmount = globalAmount.add(amount);
+  192      if (isBonusPeriod() && bonusDecreaseRate.mul(nrOfTransactions) <= bonusPercentage) {
+  193        uint256 percentage = bonusPercentage.sub(bonusDecreaseRate.mul(nrOfTransactions));
+  194        uint256 bonus = amount.div(bonusRateDivision).mul(percentage);
+  195        amount = amount.add(bonus);
+  196      }
+  197      pi.accounted = pi.accounted.add(amount);
+  198      totalWannaBuyAmount = totalWannaBuyAmount.add(amount.mul(rate).div(ltoEthDiffDecimals));
+  199      _calcProportion();
+  200      nrOfTransactions = nrOfTransactions.add(1);
+  201    }
+
+--- L203-L223 ---
+  203    function _withdrawal(address purchaser) internal {
+  204      require(purchaser != 0x0);
+  205      PurchaserInfo storage pi = purchaserMapping[purchaser];
+  206      if (pi.withdrew || !pi.recorded) {
+  207        return;
+  208      }
+  209      pi.withdrew = true;
+  210      withdrawn = withdrawn.add(1);
+  211      Purchase memory purchase = getSaleInfo(purchaser);
+  212      if (purchase.used > 0 && purchase.tokens > 0) {
+  213        receiverAddr.transfer(purchase.used);
+  214        require(token.transfer(purchaser, purchase.tokens));
+  215        if (purchase.received.sub(purchase.used) > 0) {
+  216                                                    
+  217          purchaser.transfer(purchase.received.sub(purchase.used));
+  218        }
+  219      } else {
+  220        purchaser.transfer(purchase.received);
+  221      }
+  222      return;
+  223    }
+
+--- L238-L245 ---
+  238    function clear(uint256 tokenAmount, uint256 etherAmount) payable public purchasersAllWithdrawn onlyClearTime onlyOwner {
+  239      if (tokenAmount > 0) {
+  240        token.transfer(receiverAddr, tokenAmount);
+  241      }
+  242      if (etherAmount > 0) {
+  243        receiverAddr.transfer(etherAmount);
+  244      }
+  245    }

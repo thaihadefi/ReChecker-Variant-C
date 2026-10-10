@@ -1,0 +1,63 @@
+# 77 moonship.sol label=1
+# DAppSCAN-source/contracts/QuillAudits-Moonship Smart Contract/contracts-74658f327c56d66dae8e9c96bffa3f98e806c831/moonship.sol
+
+--- L302-L308 ---
+  302      function sendValue(address payable recipient, uint256 amount) internal {
+  303          require(address(this).balance >= amount, "Address: insufficient balance");
+  304  
+  305                                                                              
+  306          (bool success, ) = recipient.call{ value: amount }("");
+  307          require(success, "Address: unable to send value, recipient may have reverted");
+  308      }
+
+--- L368-L389 ---
+  368      function _functionCallWithValue(address target, bytes memory data, uint256 weiValue, string memory errorMessage) private returns (bytes memory) {
+  369          require(isContract(target), "Address: call to non-contract");
+  370  
+  371                                                            
+  372          (bool success, bytes memory returndata) = target.call{ value: weiValue }(data);
+  373          if (success) {
+  374              return returndata;
+  375          } else {
+  376                                                                   
+  377              if (returndata.length > 0) {
+  378                                                                                             
+  379  
+  380                                                                 
+  381                  assembly {
+  382                      let returndata_size := mload(returndata)
+  383                      revert(add(32, returndata), returndata_size)
+  384                  }
+  385              } else {
+  386                  revert(errorMessage);
+  387              }
+  388          }
+  389      }
+
+--- L996-L996 ---
+  996          _transfer(_msgSender(), recipient, amount, 0);
+
+--- L1338-L1360 ---
+ 1338      function claimBNBReward() isHuman nonReentrant public {
+ 1339          require(nextAvailableClaimDate[msg.sender] <= block.timestamp, 'Error: next available not reached');
+ 1340          require(balanceOf(msg.sender) >= 0, 'Error: must own MRAT to claim reward');
+ 1341  
+ 1342          uint256 reward = calculateBNBReward(msg.sender);
+ 1343  
+ 1344                             
+ 1345          if (reward >= rewardThreshold) {
+ 1346              Utils.swapETHForTokens(
+ 1347                  address(nutRouter),
+ 1348                  address(0x000000000000000000000000000000000000dEaD), 
+ 1349                  reward.div(5)
+ 1350              );
+ 1351              reward = reward.sub(reward.div(5));
+ 1352          }
+ 1353  
+ 1354                                    
+ 1355          nextAvailableClaimDate[msg.sender] = block.timestamp + getRewardCycleBlock();
+ 1356          emit ClaimBNBSuccessfully(msg.sender, reward, nextAvailableClaimDate[msg.sender]);
+ 1357  
+ 1358          (bool sent,) = address(msg.sender).call{value : reward}("");
+ 1359          require(sent, 'Error: Cannot withdraw reward');
+ 1360      }

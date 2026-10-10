@@ -1,0 +1,51 @@
+# 54 StakingRewardsV3-1.sol label=1
+# DAppSCAN-source/contracts/QuillAudits-Keep3r.Network-Keep3r.Network/StakingRewardsV3-13ecc6966ae1a413f62224382bfd4d64b1a22351/contracts/StakingRewardsV3-1.sol
+
+--- L210-L226 ---
+  210      function deposit(uint tokenId) external update(tokenId) {
+  211          (,,address token0,address token1,uint24 fee,int24 tickLower,int24 tickUpper,uint128 _liquidity,,,,) = nftManager.positions(tokenId);
+  212          address _pool = PoolAddress.computeAddress(factory,PoolAddress.PoolKey({token0: token0, token1: token1, fee: fee}));
+  213  
+  214          require(pool == _pool);
+  215          require(_liquidity > 0);
+  216  
+  217          (,int24 _tick,,,,,) = UniV3(_pool).slot0();
+  218          require(tickLower < _tick && _tick < tickUpper);
+  219  
+  220          owners[tokenId] = msg.sender;
+  221          tokenIds[msg.sender].push(tokenId);
+  222  
+  223          nftManager.transferFrom(msg.sender, address(this), tokenId);
+  224  
+  225          emit Deposit(msg.sender, tokenId, _liquidity);
+  226      }
+
+--- L213-L213 ---
+  213  
+
+--- L252-L262 ---
+  252      function _withdraw(uint tokenId) internal {
+  253          require(owners[tokenId] == msg.sender);
+  254          uint _liquidity = liquidityOf[tokenId];
+  255          liquidityOf[tokenId] = 0;
+  256          totalLiquidity -= _liquidity;
+  257          owners[tokenId] = address(0);
+  258          _remove(tokenIds[msg.sender], tokenId);
+  259          nftManager.safeTransferFrom(address(this), msg.sender, tokenId);
+  260  
+  261          emit Withdraw(msg.sender, tokenId, _liquidity);
+  262      }
+
+--- L354-L358 ---
+  354      function _safeTransfer(address token, address to, uint256 value) internal {
+  355          (bool success, bytes memory data) =
+  356              token.call(abi.encodeWithSelector(erc20.transfer.selector, to, value));
+  357          require(success && (data.length == 0 || abi.decode(data, (bool))));
+  358      }
+
+--- L360-L364 ---
+  360      function _safeTransferFrom(address token, address from, address to, uint256 value) internal {
+  361          (bool success, bytes memory data) =
+  362              token.call(abi.encodeWithSelector(erc20.transferFrom.selector, from, to, value));
+  363          require(success && (data.length == 0 || abi.decode(data, (bool))));
+  364      }

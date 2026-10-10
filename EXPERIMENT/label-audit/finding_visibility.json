@@ -1,0 +1,924 @@
+{
+  "totals": {
+    "in_first_function": 7,
+    "extracted_at_all": 97,
+    "visible_region_prefix": 42,
+    "visible_flat_prefix": 49,
+    "positives": 114,
+    "positives_with_line_findings": 114
+  },
+  "rows": [
+    {
+      "sample_id": "1 FlashLoanLogic.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "2 Exchange.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "3 Fundraiser.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "4 code.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "5 BankingNode.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "6 Hermez.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "7 IdleCDO.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "8 Fund.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "9 LPGauge.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "10 TempusController.sol",
+      "findings": 2,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "11 BorrowerOperations.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "12 TokensRelayer.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "13 acyc.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "14 IDO.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "15 StakingV2.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "16 DynamicLiquidTokenConverter.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "17 BaseParaSwapSellAdapter.sol",
+      "findings": 1,
+      "in_first_function": true,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "18 BaseParaSwapAdapter.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "19 LiquidityStaking.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "20 StakefishERC721Wrapper.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "21 StakingProxyUniV3.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "22 LCToken.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "23 MasterChef.sol",
+      "findings": 2,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "24 SpaceMonkey.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "25 MasterShiba.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "26 Staking.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": false,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "27 AdminImpl.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "28 UniswapFeature.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "29 MetaTransactionsFeature.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": false,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "30 MasterChef.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "31 OKLGTokenLocker.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": false,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "32 Pod.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "33 TokenDrop.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "34 LendingPool.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "35 CryptoHeroesUniverse.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": false,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "36 WETHGateway.sol",
+      "findings": 4,
+      "in_first_function": true,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "37 CurveV1.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "38 UniswapV3.sol",
+      "findings": 5,
+      "in_first_function": true,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "39 UniswapV2.sol",
+      "findings": 2,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "40 YearnV2.sol",
+      "findings": 2,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "41 PoolService.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": false,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "42 Vester.sol",
+      "findings": 2,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "43 PMintBurn.sol",
+      "findings": 1,
+      "in_first_function": true,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "44 Holdefi.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "45 PRA.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "46 YearnV2YieldSource.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "47 MiniDOGE.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "48 BufferBNBOptions.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "49 VaultCore.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "50 FountainBase.sol",
+      "findings": 2,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "51 EternalHeroesFactory.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "52 MasterChef.sol",
+      "findings": 7,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "53 GnosisSafe.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "54 StakingRewardsV3-1.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": false,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "55 PowerBombAvaxCurve.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "56 Hypervisor.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "57 UniProxy.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "58 Main.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "59 ReferralFeeReceiver.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": false,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "60 FLAaveV2.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "61 MarketOracle.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": false,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "62 FeeCollector.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "63 MasterChef.sol",
+      "findings": 2,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "64 Liquidator.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "65 SNXFlashLoanTool.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "66 MasterChef.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "67 MasterMilker.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "68 wHakka.sol",
+      "findings": 2,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "69 SkyRewardPool.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "70 yToken.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "71 LimitOrderProtocol.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": false,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "72 masterchef.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "73 CCapableErc20.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "74 PikaPerpV2.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "75 ImpossibleWrappedToken.sol",
+      "findings": 2,
+      "in_first_function": true,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "76 ARCToken.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "77 moonship.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "78 CommunityVault.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "79 LPool.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "80 Swap_Factory_Future.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "81 TransactionManager.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "82 woonklyPOS.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": false,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "83 HegicPool.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "84 CToken.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "85 Comptroller.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "86 MasterChef.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "87 MainWorkflow.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": false,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "88 FixedRateSwap.sol",
+      "findings": 2,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "89 Controller.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "90 LighthouseLib.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": false,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "91 RobotLiabilityLib.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "92 code.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": false,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "93 LockableERC777.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "94 SkaleBalances.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "95 CoreVoting.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "96 MintingFactoryV2.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "97 CFVault.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "98 yWETH.sol",
+      "findings": 2,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "99 contract.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": false,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "100 ve.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "101 BsktEthLPPool.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "102 AbyssEth2Depositor.sol",
+      "findings": 1,
+      "in_first_function": true,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "103 stakin_contract.sol",
+      "findings": 1,
+      "in_first_function": true,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "104 ProfitSplitter.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": false,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "105 ProfitSplitter.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": false,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "106 RToken.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "107 AToken.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "108 Amp.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "109 YVaultAssetProxy.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": false,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "110 BCubePublicSale.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "111 BaseRewards.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": true,
+      "visible_flat_prefix": true
+    },
+    {
+      "sample_id": "112 SinglePool.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "113 Etherscan-0x9F599410D207f3D2828a8712e5e543AC2E040382.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    },
+    {
+      "sample_id": "114 bVault.sol",
+      "findings": 1,
+      "in_first_function": false,
+      "extracted_at_all": true,
+      "visible_region_prefix": false,
+      "visible_flat_prefix": false
+    }
+  ]
+}

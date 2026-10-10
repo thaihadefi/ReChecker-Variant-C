@@ -17,6 +17,7 @@ class ExperimentConfig:
     hidden_units: int = 300
     dense_units: int = 300
     dropout: float = 0.2
+    token_dropout: float = 0.0
     learning_rate: float = 0.002
     batch_size: int = 32
     epochs: int = 40
@@ -39,6 +40,8 @@ class ExperimentConfig:
             raise ValueError("batch_size/epochs must be positive and patience non-negative")
         if not 0.0 <= self.dropout < 1.0:
             raise ValueError("dropout must be in [0, 1)")
+        if not 0.0 <= self.token_dropout < 1.0:
+            raise ValueError("token_dropout must be in [0, 1)")
         if self.learning_rate <= 0.0:
             raise ValueError("learning_rate must be positive")
         if not 0.5 <= self.w_ratio <= 0.8:
@@ -96,6 +99,7 @@ class ExperimentConfig:
             "--hidden-units", str(self.hidden_units),
             "--dense-units", str(self.dense_units),
             "--dropout", str(self.dropout),
+            "--token-dropout", str(self.token_dropout),
             "--learning-rate", str(self.learning_rate),
             "--batch-size", str(self.batch_size),
             "--epochs", str(self.epochs),

@@ -1,0 +1,3 @@
+# 117 Registrar.sol label=0
+# DAppSCAN-source/contracts/consensys-Zer0_zNS/zNS-b05e503ea1ee87dbe62b1d58426aaa518068e395/contracts/Registrar.sol
+

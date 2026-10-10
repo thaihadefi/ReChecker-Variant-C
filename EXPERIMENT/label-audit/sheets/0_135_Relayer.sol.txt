@@ -1,0 +1,9 @@
+# 135 Relayer.sol label=0
+# DAppSCAN-source/contracts/Ackee_Blockchain-Layer_Zero/LayerZero-a5b266aa54714035314cbe5e451b2ec0db81b552/contracts/Relayer.sol
+
+--- L65-L69 ---
+   65      function validateTransactionProofV2(uint16 _srcChainId, address _dstAddress, uint _gasLimit, bytes32 _blockHash, bytes calldata _transactionProof, address payable _to) external payable onlyApproved nonReentrant {
+   66          (bool sent, ) = _to.call{value: msg.value}("");
+   67          require(sent, "Relayer: failed to send ether");
+   68          uln.validateTransactionProof(_srcChainId, _dstAddress, _gasLimit, _blockHash, _transactionProof);
+   69      }

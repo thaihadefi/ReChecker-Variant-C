@@ -1,0 +1,45 @@
+# 16 DynamicLiquidTokenConverter.sol label=1
+# DAppSCAN-source/contracts/consensys-Zer0_zBanc/zBanc-48da0ac1eebbe31a74742f1ae4281b156f03a4bc/solidity/contracts/converter/types/liquid-token/DynamicLiquidTokenConverter.sol
+
+--- L125-L157 ---
+  125      function reduceWeight(IERC20Token _reserveToken)
+  126          public
+  127          validReserve(_reserveToken)
+  128          ownerOnly
+  129      {
+  130          _protected();
+  131          uint256 currentMarketCap = getMarketCap(_reserveToken);
+  132          require(currentMarketCap > (lastWeightAdjustmentMarketCap.add(marketCapThreshold)), "ERR_MARKET_CAP_BELOW_THRESHOLD");
+  133  
+  134          Reserve storage reserve = reserves[_reserveToken];
+  135          uint256 newWeight = uint256(reserve.weight).sub(stepWeight);
+  136          uint32 oldWeight = reserve.weight;
+  137          require(newWeight >= minimumWeight, "ERR_INVALID_RESERVE_WEIGHT");
+  138  
+  139          uint256 percentage = uint256(PPM_RESOLUTION).sub(newWeight.mul(PPM_RESOLUTION).div(reserve.weight));
+  140  
+  141          uint32 weight = uint32(newWeight);
+  142          reserve.weight = weight;
+  143          reserveRatio = weight;
+  144  
+  145          uint256 balance = reserveBalance(_reserveToken).mul(percentage).div(PPM_RESOLUTION);
+  146  
+  147          lastWeightAdjustmentMarketCap = currentMarketCap;
+  148  
+  149          if (_reserveToken == ETH_RESERVE_ADDRESS)
+  150            msg.sender.transfer(balance);
+  151          else
+  152            safeTransfer(_reserveToken, msg.sender, balance);
+  153  
+  154          syncReserveBalance(_reserveToken);
+  155  
+  156          emit ReserveTokenWeightUpdate(oldWeight, weight, percentage, reserve.balance);
+  157      }
+
+--- L127-L132 ---
+  127          validReserve(_reserveToken)
+  128          ownerOnly
+  129      {
+  130          _protected();
+  131          uint256 currentMarketCap = getMarketCap(_reserveToken);
+  132          require(currentMarketCap > (lastWeightAdjustmentMarketCap.add(marketCapThreshold)), "ERR_MARKET_CAP_BELOW_THRESHOLD");

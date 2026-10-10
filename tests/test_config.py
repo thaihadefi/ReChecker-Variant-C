@@ -17,6 +17,11 @@ class ConfigTests(unittest.TestCase):
         original = ExperimentConfig(max_len=100, batch_size=8)
         self.assertEqual(ExperimentConfig.from_dict(original.to_dict()), original)
 
+    def test_invalid_token_dropout_is_rejected(self):
+        for value in (-0.1, 1.0):
+            with self.subTest(value=value), self.assertRaisesRegex(ValueError, "token_dropout"):
+                ExperimentConfig(token_dropout=value)
+
     def test_invalid_threshold_strategy_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "threshold_strategy"):
             ExperimentConfig(threshold_strategy="max_f1")
