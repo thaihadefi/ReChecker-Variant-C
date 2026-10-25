@@ -66,7 +66,6 @@ def artifact_bytes(path: str | Path) -> int:
 
 def source_fingerprint(root: str | Path = ".") -> str:
     base = Path(root)
-    paths = sorted((base / "rechecker").rglob("*.py")) + [base / "main.py"]
     source_dirs = ("config", "data", "models", "representation", "experiments")
     paths = [base / "main.py"]
     for folder in source_dirs:

@@ -16,7 +16,6 @@ from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
 import numpy as np
-from sklearn.utils.class_weight import compute_class_weight
 
 from config.config import ExperimentConfig
 from data.loader import load_records
@@ -27,8 +26,8 @@ from experiments.metrics import (
     select_recall_threshold,
 )
 from experiments.reproducibility import set_seed
+from experiments.runner import _class_weights, _examples, _model_inputs
 from experiments.splits import assert_group_disjoint, make_validation_split
-from models.models import build_model
 from representation.embeddings import fit_embedding
 from representation.pruning import (
     abstract_identifiers,
@@ -37,9 +36,8 @@ from representation.pruning import (
     prune_vocabulary,
     sample_group_fraction,
 )
-from representation.sequences import build_sequence, embedding_tokens
+from representation.sequences import embedding_tokens
 from representation.variants import VARIANTS, VariantSpec
-from representation.vectorization import vectorize_examples
 
 
 DEFAULT_TEST_FILES = {
@@ -58,29 +56,44 @@ class TrainingSetup:
     train_fraction: float = 1.0
     extra_train_files: tuple[str, ...] = ()
 
-
-def _examples(records: list[GadgetRecord], spec: VariantSpec, config: ExperimentConfig):
-    return [
-        build_sequence(record, spec, config.max_len, config.w_ratio)
-        for record in records
-    ]
+    def to_dict(self) -> dict[str, object]:
+        values = asdict(self)
+        values["extra_train_files"] = list(self.extra_train_files)
+        return values
 
 
-def _model_inputs(examples, embeddings, spec: VariantSpec, config: ExperimentConfig):
-    vectors = vectorize_examples(
-        examples, embeddings, config.max_len, config.vector_dim
-    )
-    if spec.use_segment_embedding:
-        auxiliary = np.stack([item.segment_ids for item in examples])
-    else:
-        auxiliary = np.stack([item.valid_mask for item in examples])
-    return [vectors, auxiliary]
+def _model_config_dict(config: ExperimentConfig) -> dict[str, object]:
+    return {
+        "hidden_units": config.hidden_units,
+        "dense_units": config.dense_units,
+        "dropout": config.dropout,
+        "token_dropout": config.token_dropout,
+    }
 
 
-def _class_weights(labels: np.ndarray) -> dict[int, float]:
-    classes = np.unique(labels)
-    weights = compute_class_weight("balanced", classes=classes, y=labels)
-    return {int(label): float(weight) for label, weight in zip(classes, weights)}
+def _validate_existing_results(
+    results: list[dict[str, object]],
+    setup: TrainingSetup,
+    config: ExperimentConfig,
+) -> None:
+    expected_setup = setup.to_dict()
+    expected_model = _model_config_dict(config)
+    for entry in results:
+        existing_setup = entry.get("setup")
+        if isinstance(existing_setup, dict):
+            normalized = dict(existing_setup)
+            normalized["extra_train_files"] = list(
+                normalized.get("extra_train_files", ())
+            )
+            if normalized != expected_setup:
+                raise RuntimeError(
+                    "existing cross_dataset_results.json was created with a different TrainingSetup"
+                )
+        existing_model = entry.get("model_config")
+        if isinstance(existing_model, dict) and existing_model != expected_model:
+            raise RuntimeError(
+                "existing cross_dataset_results.json was created with a different model_config"
+            )
 
 
 def prepare_records(
@@ -104,7 +117,8 @@ def prepare_records(
         train_records = deduplicate_groups(train_records)
     train_records = sample_group_fraction(train_records, setup.train_fraction, seed)
 
-    fit_indices, val_indices = make_validation_split(train_records, config)
+    seeded_config = replace(config, seed=seed)
+    fit_indices, val_indices = make_validation_split(train_records, seeded_config)
     fit_records = [train_records[i] for i in fit_indices]
     val_records = [train_records[i] for i in val_indices]
     assert_group_disjoint(fit_records, val_records, "train vs validation split")
@@ -131,6 +145,8 @@ def run_cross_dataset_eval(
     import tensorflow as tf
     from tensorflow.keras.callbacks import EarlyStopping
     from tensorflow.keras.utils import to_categorical
+
+    from models.models import build_model
 
     set_seed(seed)
     local_config = replace(config, seed=seed, verbose=0)
@@ -235,13 +251,8 @@ def run_cross_dataset_eval(
     return {
         "variant": spec.name,
         "seed": seed,
-        "setup": asdict(setup),
-        "model_config": {
-            "hidden_units": local_config.hidden_units,
-            "dense_units": local_config.dense_units,
-            "dropout": local_config.dropout,
-            "token_dropout": local_config.token_dropout,
-        },
+        "setup": setup.to_dict(),
+        "model_config": _model_config_dict(local_config),
         "sizes": {
             "fit": len(fit_records),
             "validation": len(val_records),
@@ -336,10 +347,16 @@ def main():
     if out_file.exists():
         with open(out_file, "r", encoding="utf-8") as f:
             all_results = json.load(f)
+        _validate_existing_results(all_results, setup, config)
 
     for spec in variants:
         for seed in seeds:
-            if any(r["variant"] == spec.name and r["seed"] == seed for r in all_results):
+            if any(
+                r["variant"] == spec.name
+                and r["seed"] == seed
+                and set(test_files).issubset(r.get("evaluations", {}))
+                for r in all_results
+            ):
                 print(f"Skipping already completed Variant {spec.name} (Seed {seed})", flush=True)
                 continue
             res = run_cross_dataset_eval(spec, args.train_file, test_files, config, seed, setup)

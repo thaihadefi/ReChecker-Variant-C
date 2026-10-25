@@ -49,18 +49,22 @@ def abstract_identifiers(records: Sequence[GadgetRecord]) -> list[GadgetRecord]:
     return abstracted
 
 
-def deduplicate_groups(records: Sequence[GadgetRecord]) -> list[GadgetRecord]:
-    """Keep one record per exact-duplicate group (first occurrence).
-
-    Groups are label-pure in the source data; a mixed group would make the
-    kept label arbitrary, so it is rejected instead of silently resolved.
-    """
+def _validate_label_pure_groups(records: Sequence[GadgetRecord]) -> None:
     labels: dict[str, set[int]] = {}
     for record in records:
         labels.setdefault(record.group_id, set()).add(record.label)
     mixed = [group for group, values in labels.items() if len(values) > 1]
     if mixed:
         raise ValueError(f"{len(mixed)} duplicate groups carry conflicting labels")
+
+
+def deduplicate_groups(records: Sequence[GadgetRecord]) -> list[GadgetRecord]:
+    """Keep one record per exact-duplicate group (first occurrence).
+
+    Groups are label-pure in the source data; a mixed group would make the
+    kept label arbitrary, so it is rejected instead of silently resolved.
+    """
+    _validate_label_pure_groups(records)
     seen: set[str] = set()
     kept = []
     for record in records:
@@ -76,6 +80,7 @@ def sample_group_fraction(
     """Keep a label-stratified random fraction of groups (whole groups only)."""
     if not 0.0 < fraction <= 1.0:
         raise ValueError("fraction must be in (0, 1]")
+    _validate_label_pure_groups(records)
     if fraction == 1.0:
         return list(records)
     group_label = {record.group_id: record.label for record in records}
@@ -83,6 +88,8 @@ def sample_group_fraction(
     kept_groups: set[str] = set()
     for label in (0, 1):
         groups = sorted(group for group, value in group_label.items() if value == label)
+        if not groups:
+            continue
         count = max(1, round(fraction * len(groups)))
         kept_groups.update(rng.choice(groups, size=count, replace=False).tolist())
     return [record for record in records if record.group_id in kept_groups]

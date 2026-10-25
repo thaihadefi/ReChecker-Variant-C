@@ -55,6 +55,8 @@ def em_prior_adjust(
 
     `calibrated` must be posteriors calibrated to `source_prior`.
     """
+    if not 0.0 < source_prior < 1.0:
+        raise ValueError("source_prior must be in (0, 1)")
     posterior = np.clip(np.asarray(calibrated, dtype=np.float64), _EPS, 1 - _EPS)
     prior = source_prior
     adjusted = posterior
@@ -206,12 +208,16 @@ def fold_result_as_run(result: dict, seed: int) -> dict:
 
 def summarize(results_file: Path | None, test_name: str, draws: int, runs: list[dict] | None = None) -> dict:
     if runs is None:
+        if results_file is None:
+            raise ValueError("either results_file or runs must be provided")
         runs = json.loads(results_file.read_text(encoding="utf-8"))
     per_variant: dict[str, list[dict]] = defaultdict(list)
     for run in runs:
-        if "validation" not in run or test_name not in run["evaluations"]:
+        if "validation" not in run or test_name not in run.get("evaluations", {}):
             continue
         per_variant[run["variant"]].append(prevalence_sweep(run, test_name, draws=draws, seed=run["seed"]))
+    if not per_variant:
+        raise ValueError(f"no runs with validation predictions and test set {test_name!r}")
 
     summary = {}
     for variant, sweeps in per_variant.items():
@@ -229,6 +235,34 @@ def summarize(results_file: Path | None, test_name: str, draws: int, runs: list[
                 }
         summary[variant]["seeds"] = len(sweeps)
     return summary
+
+
+def markdown_section(summary: dict, label: str, variant: str) -> str:
+    by_prevalence = summary[variant]
+    header_cols = " | ".join(STRATEGIES)
+    lines = [
+        f"## {label} — {variant} ({by_prevalence['seeds']} runs)",
+        "",
+        f"| Prevalence | ROC-AUC | EM-estimated prior | {header_cols} | all-positive F1 |",
+        "|---|---|---|---|---|---|---|---|---|---|",
+    ]
+    for prevalence, strategies in by_prevalence.items():
+        if prevalence == "seeds":
+            continue
+        p_val = float(prevalence)
+        any_metrics = strategies["source_eer"]
+        cells = [
+            f"{m['f1']['mean']*100:.1f} / {m['fpr']['mean']*100:.1f} / {m['balanced_accuracy']['mean']*100:.1f}"
+            for m in (strategies[s] for s in STRATEGIES)
+        ]
+        all_pos_f1 = 200.0 * p_val / (1.0 + p_val)
+        lines.append(
+            f"| {round(p_val * 100)}% | {any_metrics['roc_auc']['mean']*100:.1f} | "
+            f"{any_metrics['em_estimated_prevalence']['mean']*100:.1f} | "
+            + " | ".join(cells)
+            + f" | {all_pos_f1:.1f} |"
+        )
+    return "\n".join(lines)
 
 
 def main() -> None:
