@@ -130,12 +130,13 @@ def build_dataset(
     dappscan_root: Path, output_path: Path, neg_ratio: float, seed: int
 ) -> dict[str, int]:
     positive, negative = _classify(dappscan_root)
-    sample_count = min(len(negative), round(neg_ratio * len(positive)))
+    negative_available = len(negative)
+    sample_count = min(negative_available, round(neg_ratio * len(positive)))
     negative = random.Random(seed).sample(negative, sample_count)
     written, skipped = write_gadgets([(1, positive), (0, negative)], output_path)
     return {
         "positive_available": len(positive),
-        "negative_available": len(negative) + skipped,
+        "negative_available": negative_available,
         "written": written,
         "skipped": skipped,
     }

@@ -54,10 +54,12 @@ def summarize(root: Path, reference: str) -> dict:
         for variant in sorted({r["variant"] for r in results}):
             variant_runs = [r for r in results if r["variant"] == variant]
             summary[setting][variant] = {"seeds": len(variant_runs), "fit_size": variant_runs[0]["sizes"]["fit"]}
-            for test in variant_runs[0]["evaluations"]:
+            test_names = sorted({t for r in variant_runs for t in r.get("evaluations", {})})
+            for test in test_names:
+                test_runs = [r for r in variant_runs if test in r.get("evaluations", {})]
                 stats = {}
                 for metric, block in METRICS:
-                    values = [r["evaluations"][test][block][metric] for r in variant_runs]
+                    values = [r["evaluations"][test][block][metric] for r in test_runs]
                     key = f"{metric}@{block.split('_')[2]}" if metric not in ("roc_auc", "pr_auc") else metric
                     stats[key] = {"mean": float(np.mean(values)), "std": float(np.std(values))}
                 stats["vs_reference"] = _paired(
