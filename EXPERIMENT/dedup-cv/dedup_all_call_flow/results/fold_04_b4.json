@@ -1,0 +1,494 @@
+{
+  "best_validation_loss": 0.663509726524353,
+  "coverage": {
+    "c_coverage": 1.0,
+    "c_retention": 0.4442438870542067,
+    "sep_coverage": 1.0,
+    "token_retention": 0.5349117544794251,
+    "w_retention": 0.9998154300479882
+  },
+  "epochs_trained": 7,
+  "fold": 3,
+  "metrics": {
+    "accuracy": 0.3055555555555556,
+    "confusion_matrix": {
+      "fn": 1,
+      "fp": 24,
+      "tn": 2,
+      "tp": 9
+    },
+    "eer": 0.4115384615384616,
+    "f1_macro": 0.27826784282277467,
+    "f1_vulnerable": 0.4186046511627907,
+    "false_negative_rate": 0.1,
+    "false_positive_rate": 0.9230769230769231,
+    "pr_auc": 0.5845156534286968,
+    "precision_vulnerable": 0.2727272727272727,
+    "recall_vulnerable": 0.9,
+    "roc_auc": 0.6615384615384615,
+    "threshold": 0.4268156588077545
+  },
+  "model": {
+    "non_trainable_parameters": 0,
+    "total_parameters": 213106,
+    "trainable_parameters": 213106
+  },
+  "outer_test_size": 36,
+  "outer_train_size": 148,
+  "performance": {
+    "embedding_bytes": 120284900,
+    "embedding_fit_seconds": 1.3894536669977242,
+    "inference": {
+      "milliseconds_per_sample": 13.745189805477922,
+      "samples_per_second": 72.75272398213565,
+      "seconds": 0.4948268329972052
+    },
+    "model_training_seconds": 19.25296245800564,
+    "peak_rss_mb": 1248.96875,
+    "weights_bytes": 2619248
+  },
+  "predictions": [
+    {
+      "group_id": "323d9283afbc2d78",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.4874895215034485,
+      "sample_id": "52 27263.sol"
+    },
+    {
+      "group_id": "bcf59ede0f2fd5db",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.43931952118873596,
+      "sample_id": "70 37676.sol"
+    },
+    {
+      "group_id": "9ff38f60a846680c",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.4645761549472809,
+      "sample_id": "151 1044.sol"
+    },
+    {
+      "group_id": "7719d7c95e5867ef",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.49529653787612915,
+      "sample_id": "175 17215.sol"
+    },
+    {
+      "group_id": "3d83c919f5578dd8",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.4733136296272278,
+      "sample_id": "220 29517.sol"
+    },
+    {
+      "group_id": "c9852772ccbe1649",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.4949292838573456,
+      "sample_id": "226 30046.sol"
+    },
+    {
+      "group_id": "e1ed17decd09e252",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.4998006224632263,
+      "sample_id": "238 EtherStore.sol"
+    },
+    {
+      "group_id": "0e5d74ce5fc8c67e",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.4709921181201935,
+      "sample_id": "250 11705.sol"
+    },
+    {
+      "group_id": "0b06df6f5abbfce6",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.4473015367984772,
+      "sample_id": "256 23166.sol"
+    },
+    {
+      "group_id": "6354b4cc3cd9a119",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.4821651577949524,
+      "sample_id": "355 39890.sol"
+    },
+    {
+      "group_id": "d1b7175a28f10b54",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.48127511143684387,
+      "sample_id": "379 31759.sol"
+    },
+    {
+      "group_id": "5886d3aea8a7b598",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.4923418462276459,
+      "sample_id": "571 30337.sol"
+    },
+    {
+      "group_id": "a2cf691b4cd85cac",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.4623516798019409,
+      "sample_id": "577 2013.sol"
+    },
+    {
+      "group_id": "000727ccc8959646",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.48457205295562744,
+      "sample_id": "658 39662.sol"
+    },
+    {
+      "group_id": "a6ea05cdaf502db8",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.475686252117157,
+      "sample_id": "661 28974.sol"
+    },
+    {
+      "group_id": "7771844aecbd0f51",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.46964579820632935,
+      "sample_id": "694 14741.sol"
+    },
+    {
+      "group_id": "0d69489eedb4d451",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.43188440799713135,
+      "sample_id": "709 38724.sol"
+    },
+    {
+      "group_id": "ceef0eef70bd6560",
+      "label": 0,
+      "prediction": 0,
+      "probability": 0.4009503722190857,
+      "sample_id": "781 33851.sol"
+    },
+    {
+      "group_id": "8d150b720f3cab48",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.4734885096549988,
+      "sample_id": "784 36732.sol"
+    },
+    {
+      "group_id": "2d0d3f55411a8184",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.4777609705924988,
+      "sample_id": "799 27398.sol"
+    },
+    {
+      "group_id": "79d3241f736b3a99",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.48948100209236145,
+      "sample_id": "817 19128.sol"
+    },
+    {
+      "group_id": "7418c80d08e1b544",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.49686136841773987,
+      "sample_id": "826 Victim.sol"
+    },
+    {
+      "group_id": "2f84793482bed01f",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.489300400018692,
+      "sample_id": "1000 36334.sol"
+    },
+    {
+      "group_id": "b568097eb931df5a",
+      "label": 1,
+      "prediction": 1,
+      "probability": 0.49513113498687744,
+      "sample_id": "1042 SimpleDAO.sol"
+    },
+    {
+      "group_id": "ab3d3f8a909dcb7e",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.4938851594924927,
+      "sample_id": "1054 32605.sol"
+    },
+    {
+      "group_id": "8ca61fddd4217d46",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.4596724510192871,
+      "sample_id": "1063 40090.sol"
+    },
+    {
+      "group_id": "226b43156fbf3e30",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.457126259803772,
+      "sample_id": "1111 18170.sol"
+    },
+    {
+      "group_id": "5bcd0e7b9bdf27d4",
+      "label": 0,
+      "prediction": 0,
+      "probability": 0.42180126905441284,
+      "sample_id": "1162 32559.sol"
+    },
+    {
+      "group_id": "bac7c67bffae8216",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.48739123344421387,
+      "sample_id": "1267 28869.sol"
+    },
+    {
+      "group_id": "8d4ea95b5273e50e",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.4909476637840271,
+      "sample_id": "1297 10107.sol"
+    },
+    {
+      "group_id": "66fd4d5783976848",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.46168053150177,
+      "sample_id": "1327 39191.sol"
+    },
+    {
+      "group_id": "a9dc55d66fe227b3",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.4536952078342438,
+      "sample_id": "1450 2021.sol"
+    },
+    {
+      "group_id": "3a7823f6594b77cc",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.4927015006542206,
+      "sample_id": "1489 cross-function-reentrancy-fixed.sol"
+    },
+    {
+      "group_id": "a0e25c23a8d7ed3b",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.45270785689353943,
+      "sample_id": "1609 1710.sol"
+    },
+    {
+      "group_id": "5dfa60520db9b92d",
+      "label": 0,
+      "prediction": 1,
+      "probability": 0.45898354053497314,
+      "sample_id": "1636 12182.sol"
+    },
+    {
+      "group_id": "d961171afe8553ef",
+      "label": 1,
+      "prediction": 0,
+      "probability": 0.4108218848705292,
+      "sample_id": "1642 21886.sol"
+    }
+  ],
+  "schema_version": 1,
+  "sizes": {
+    "fit": 118,
+    "test": 36,
+    "validation": 30
+  },
+  "validation_predictions": [
+    {
+      "group_id": "1932ff91e08782bf",
+      "label": 1,
+      "probability": 0.4451945424079895,
+      "sample_id": "25 2189.sol"
+    },
+    {
+      "group_id": "1dcaae4d296c6dfa",
+      "label": 0,
+      "probability": 0.4131503105163574,
+      "sample_id": "160 17573.sol"
+    },
+    {
+      "group_id": "71fb345f404e71bc",
+      "label": 0,
+      "probability": 0.49821823835372925,
+      "sample_id": "253 37891.sol"
+    },
+    {
+      "group_id": "e5158a7e61ca65ca",
+      "label": 0,
+      "probability": 0.4737042188644409,
+      "sample_id": "583 31565.sol"
+    },
+    {
+      "group_id": "e0a194daf02f442f",
+      "label": 0,
+      "probability": 0.4458262026309967,
+      "sample_id": "688 38888.sol"
+    },
+    {
+      "group_id": "f2eb81b5965e88a0",
+      "label": 0,
+      "probability": 0.46680012345314026,
+      "sample_id": "718 21277.sol"
+    },
+    {
+      "group_id": "582843b0d7f201fb",
+      "label": 0,
+      "probability": 0.441215842962265,
+      "sample_id": "733 30178.sol"
+    },
+    {
+      "group_id": "a4c0247660b27d3d",
+      "label": 0,
+      "probability": 0.4833996295928955,
+      "sample_id": "748 22805.sol"
+    },
+    {
+      "group_id": "83abb76f3f6f64b2",
+      "label": 1,
+      "probability": 0.4483046531677246,
+      "sample_id": "760 14353.sol"
+    },
+    {
+      "group_id": "36a69db5a5a4a00d",
+      "label": 0,
+      "probability": 0.4765855669975281,
+      "sample_id": "769 2301.sol"
+    },
+    {
+      "group_id": "55aa9b9b8d142790",
+      "label": 1,
+      "probability": 0.4911842942237854,
+      "sample_id": "802 15458.sol"
+    },
+    {
+      "group_id": "a95384ac14e8a09c",
+      "label": 0,
+      "probability": 0.4863119125366211,
+      "sample_id": "844 21111.sol"
+    },
+    {
+      "group_id": "d78a9596ecdc6e10",
+      "label": 1,
+      "probability": 0.48298972845077515,
+      "sample_id": "922 1751.sol"
+    },
+    {
+      "group_id": "7db263084434f087",
+      "label": 0,
+      "probability": 0.48565077781677246,
+      "sample_id": "937 774.sol"
+    },
+    {
+      "group_id": "c81471bd919a6905",
+      "label": 0,
+      "probability": 0.45152705907821655,
+      "sample_id": "1117 40469.sol"
+    },
+    {
+      "group_id": "b25d1ff123a4dbac",
+      "label": 1,
+      "probability": 0.4933701157569885,
+      "sample_id": "1147 1403.sol"
+    },
+    {
+      "group_id": "435ca9e7d96234f8",
+      "label": 1,
+      "probability": 0.4268156588077545,
+      "sample_id": "1207 25196.sol"
+    },
+    {
+      "group_id": "494afd4955569161",
+      "label": 0,
+      "probability": 0.4982585906982422,
+      "sample_id": "1219 simple_dao_fixed.sol"
+    },
+    {
+      "group_id": "333ebe76e2fad096",
+      "label": 0,
+      "probability": 0.44605913758277893,
+      "sample_id": "1255 347.sol"
+    },
+    {
+      "group_id": "ab632ce7486f9745",
+      "label": 0,
+      "probability": 0.42895832657814026,
+      "sample_id": "1258 3985.sol"
+    },
+    {
+      "group_id": "051fe4a5251dd240",
+      "label": 0,
+      "probability": 0.4676856994628906,
+      "sample_id": "1276 14994.sol"
+    },
+    {
+      "group_id": "e657d051a2b4f2ab",
+      "label": 1,
+      "probability": 0.4620296061038971,
+      "sample_id": "1378 23421.sol"
+    },
+    {
+      "group_id": "52bbfdcb78ff3d7e",
+      "label": 0,
+      "probability": 0.48598751425743103,
+      "sample_id": "1393 39684.sol"
+    },
+    {
+      "group_id": "f12c7d13b4b47f04",
+      "label": 0,
+      "probability": 0.42570245265960693,
+      "sample_id": "1399 9611.sol"
+    },
+    {
+      "group_id": "87c08a4d43512fa8",
+      "label": 0,
+      "probability": 0.46659931540489197,
+      "sample_id": "1438 10604.sol"
+    },
+    {
+      "group_id": "d77477c782649f6b",
+      "label": 0,
+      "probability": 0.44608360528945923,
+      "sample_id": "1456 40341.sol"
+    },
+    {
+      "group_id": "d873b1d698554502",
+      "label": 1,
+      "probability": 0.4888679087162018,
+      "sample_id": "1465 39866.sol"
+    },
+    {
+      "group_id": "e132654dbfd7b4f0",
+      "label": 1,
+      "probability": 0.4700927436351776,
+      "sample_id": "1558 2387.sol"
+    },
+    {
+      "group_id": "62505f863091f24e",
+      "label": 0,
+      "probability": 0.46835723519325256,
+      "sample_id": "1585 9600.sol"
+    },
+    {
+      "group_id": "4557180d7e8ee658",
+      "label": 0,
+      "probability": 0.4551151692867279,
+      "sample_id": "1663 30460.sol"
+    }
+  ],
+  "variant": "b4",
+  "variant_description": "Variant C with head-tail region policy"
+}

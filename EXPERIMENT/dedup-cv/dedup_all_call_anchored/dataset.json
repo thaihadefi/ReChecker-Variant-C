@@ -1,0 +1,25 @@
+{
+  "dataset_sha256": "b839f8b1ae6aa1111a875ecf42ef7b74883b1831bfdd12516b551a9cf79c8135",
+  "environment": {
+    "packages": {
+      "gensim": "4.4.0",
+      "keras": "3.15.1",
+      "numpy": "2.4.6",
+      "scikit-learn": "1.9.1",
+      "scipy": "1.17.1",
+      "tensorflow": "2.21.0"
+    },
+    "platform": "macOS-27.0.1-arm64-arm-64bit",
+    "python": "3.11.16 (main, Aug 14 2026, 15:24:25) [Clang 22.1.3 ]"
+  },
+  "groups": 184,
+  "samples": 184,
+  "source_sha256": "1891c7ac31528e577c67e32374bf837a81701eddc2a6f78647ccb36e4f267045",
+  "vulnerable": 53,
+  "w_c_extraction_strategy": "call-anchored-function-blocks",
+  "w_region_diagnostics": {
+    "with_contract_declaration": 0,
+    "with_dropped_preamble": 184,
+    "with_modifier_declaration": 1
+  }
+}
