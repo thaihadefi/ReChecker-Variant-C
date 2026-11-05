@@ -30,6 +30,10 @@ class ExperimentConfig:
     early_stop_monitor: str = "val_pr_auc"
     seed: int = 42
     verbose: int = 2
+    extraction_strategy: str = "first"
+    dedup: bool = False
+    abstract_ids: bool = False
+    min_token_groups: int = 1
 
     def __post_init__(self) -> None:
         if self.max_len < 3:
@@ -60,6 +64,12 @@ class ExperimentConfig:
             )
         if self.verbose not in (0, 1, 2):
             raise ValueError("verbose must be 0, 1, or 2")
+        if self.extraction_strategy not in ("first", "call_anchored", "call_flow"):
+            raise ValueError(
+                "extraction_strategy must be one of 'first', 'call_anchored', 'call_flow'"
+            )
+        if self.min_token_groups < 1:
+            raise ValueError("min_token_groups must be at least 1")
 
     @property
     def w_budget(self) -> int:
@@ -79,6 +89,14 @@ class ExperimentConfig:
         values["output_root"] = str(self.output_root)
         values["w_budget"] = self.w_budget
         values["c_budget"] = self.c_budget
+        if self.extraction_strategy == "first":
+            values.pop("extraction_strategy", None)
+        if not self.dedup:
+            values.pop("dedup", None)
+        if not self.abstract_ids:
+            values.pop("abstract_ids", None)
+        if self.min_token_groups == 1:
+            values.pop("min_token_groups", None)
         return values
 
     @classmethod
@@ -91,7 +109,7 @@ class ExperimentConfig:
         return cls(**fields)
 
     def to_cli_args(self) -> list[str]:
-        return [
+        args = [
             "--data-file", str(self.data_file),
             "--output-root", str(self.output_root),
             "--max-len", str(self.max_len),
@@ -113,3 +131,12 @@ class ExperimentConfig:
             "--seed", str(self.seed),
             "--verbose", str(self.verbose),
         ]
+        if self.extraction_strategy != "first":
+            args.extend(["--extraction-strategy", self.extraction_strategy])
+        if self.dedup:
+            args.append("--dedup")
+        if self.abstract_ids:
+            args.append("--abstract-ids")
+        if self.min_token_groups > 1:
+            args.extend(["--min-token-groups", str(self.min_token_groups)])
+        return args

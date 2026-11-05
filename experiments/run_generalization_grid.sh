@@ -20,7 +20,7 @@ REG="--hidden-units 64 --dense-units 64 --dropout 0.5 --token-dropout 0.2"
 SMARTBUGS="--extra-train Dataset/smartbugs_reentrancy.txt"
 
 ALL="--dedup --abstract-ids --min-token-groups 5 $REG"
-NAMES="baseline dedup dedup_abstract dedup_vocab dedup_reg dedup_all dedup_frac50 dedup_frac75 dedup_sb dedup_all_sb dedup_all_frac50 dedup_all_frac75"
+NAMES="baseline dedup dedup_abstract dedup_vocab dedup_reg dedup_all dedup_frac50 dedup_frac75 dedup_sb dedup_all_sb dedup_all_frac50 dedup_all_frac75 dedup_call_anchored dedup_call_flow dedup_all_call_anchored dedup_all_call_flow dedup_all_sb_call_flow"
 
 # bash 3.2 (macOS default) has no associative arrays.
 setting_args() {
@@ -37,6 +37,11 @@ setting_args() {
     dedup_all_sb) echo "$ALL $SMARTBUGS" ;;
     dedup_all_frac50) echo "$ALL --train-fraction 0.5" ;;
     dedup_all_frac75) echo "$ALL --train-fraction 0.75" ;;
+    dedup_call_anchored) echo "--dedup --extraction-strategy call_anchored" ;;
+    dedup_call_flow) echo "--dedup --extraction-strategy call_flow" ;;
+    dedup_all_call_anchored) echo "$ALL --extraction-strategy call_anchored" ;;
+    dedup_all_call_flow) echo "$ALL --extraction-strategy call_flow" ;;
+    dedup_all_sb_call_flow) echo "$ALL $SMARTBUGS --extraction-strategy call_flow" ;;
     *) return 1 ;;
   esac
 }

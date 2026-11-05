@@ -18,6 +18,7 @@ from pathlib import Path
 import numpy as np
 
 from config.config import ExperimentConfig
+from data.extraction import EXTRACTION_STRATEGIES
 from data.loader import load_records
 from data.types import GadgetRecord
 from experiments.metrics import (
@@ -55,10 +56,13 @@ class TrainingSetup:
     min_token_groups: int = 1
     train_fraction: float = 1.0
     extra_train_files: tuple[str, ...] = ()
+    extraction_strategy: str = "first"
 
     def to_dict(self) -> dict[str, object]:
         values = asdict(self)
         values["extra_train_files"] = list(self.extra_train_files)
+        if self.extraction_strategy == "first":
+            values.pop("extraction_strategy", None)
         return values
 
 
@@ -154,10 +158,28 @@ def run_cross_dataset_eval(
     print("\n=======================================================", flush=True)
     print(f"=== Running Variant {spec.name} (Seed {seed}) ===", flush=True)
     print("=======================================================", flush=True)
-    train_records = load_records(train_file)
+    train_records = load_records(
+        train_file,
+        extraction_strategy=setup.extraction_strategy,
+        w_budget=local_config.w_budget,
+        c_budget=local_config.c_budget,
+    )
     for extra in setup.extra_train_files:
-        train_records = train_records + load_records(extra)
-    test_datasets = {name: load_records(path) for name, path in test_files.items()}
+        train_records = train_records + load_records(
+            extra,
+            extraction_strategy=setup.extraction_strategy,
+            w_budget=local_config.w_budget,
+            c_budget=local_config.c_budget,
+        )
+    test_datasets = {
+        name: load_records(
+            path,
+            extraction_strategy=setup.extraction_strategy,
+            w_budget=local_config.w_budget,
+            c_budget=local_config.c_budget,
+        )
+        for name, path in test_files.items()
+    }
 
     fit_records, val_records, test_datasets = prepare_records(
         train_records, test_datasets, setup, local_config, seed
@@ -301,6 +323,12 @@ def _parser() -> argparse.ArgumentParser:
         "--min-token-groups", type=int, default=1,
         help="replace tokens seen in fewer training groups than this with [UNK]",
     )
+    parser.add_argument(
+        "--extraction-strategy",
+        choices=EXTRACTION_STRATEGIES,
+        default="first",
+        help="W/C extraction strategy: first (historical), call_anchored, or call_flow",
+    )
     parser.add_argument("--train-fraction", type=float, default=1.0)
     parser.add_argument("--hidden-units", type=int, default=300)
     parser.add_argument("--dense-units", type=int, default=300)
@@ -318,6 +346,7 @@ def main():
         min_token_groups=args.min_token_groups,
         train_fraction=args.train_fraction,
         extra_train_files=tuple(p.strip() for p in args.extra_train.split(",") if p.strip()),
+        extraction_strategy=args.extraction_strategy,
     )
 
     variants = [VARIANTS[v.strip()] for v in args.variants.split(",") if v.strip()]

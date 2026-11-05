@@ -10,6 +10,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from config.config import ExperimentConfig
+from data.extraction import EXTRACTION_STRATEGIES, EXTRACTION_STRATEGY_DESCRIPTIONS
 from representation.variants import ALIASES, VARIANTS, resolve_variants
 
 
@@ -53,6 +54,28 @@ def _parser() -> argparse.ArgumentParser:
         choices=("val_loss", "val_accuracy", "val_pr_auc"),
         default="val_pr_auc",
     )
+    parser.add_argument(
+        "--extraction-strategy",
+        choices=EXTRACTION_STRATEGIES,
+        default="first",
+        help="W/C extraction strategy: first (historical), call_anchored, or call_flow",
+    )
+    parser.add_argument(
+        "--dedup",
+        action="store_true",
+        help="keep one unique contract per exact-duplicate group before CV",
+    )
+    parser.add_argument(
+        "--abstract-ids",
+        action="store_true",
+        help="collapse VARn/FUNn -> VAR/FUN and numeric literals -> NUM",
+    )
+    parser.add_argument(
+        "--min-token-groups",
+        type=int,
+        default=1,
+        help="replace tokens seen in fewer fit groups than this with [UNK]",
+    )
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument(
         "--seeds",
@@ -85,6 +108,10 @@ def _config(args: argparse.Namespace) -> ExperimentConfig:
         early_stop_monitor=args.early_stop_monitor,
         seed=args.seed,
         verbose=args.verbose,
+        extraction_strategy=args.extraction_strategy,
+        dedup=args.dedup,
+        abstract_ids=args.abstract_ids,
+        min_token_groups=args.min_token_groups,
     )
 
 
@@ -93,6 +120,23 @@ def _parse_seeds(raw: str) -> list[int]:
     if not seeds:
         raise SystemExit("--seeds must list at least one seed")
     return seeds
+
+
+def _load_prepared_records(config: ExperimentConfig):
+    from data.loader import load_records
+    from representation.pruning import abstract_identifiers, deduplicate_groups
+
+    records = load_records(
+        config.data_file,
+        extraction_strategy=config.extraction_strategy,
+        w_budget=config.w_budget,
+        c_budget=config.c_budget,
+    )
+    if config.abstract_ids:
+        records = abstract_identifiers(records)
+    if config.dedup:
+        records = deduplicate_groups(records)
+    return records
 
 
 def _initialize_run(
@@ -117,7 +161,7 @@ def _initialize_run(
         "groups": len({record.group_id for record in records}),
         "dataset_sha256": file_sha256(config.data_file),
         "source_sha256": source_fingerprint(),
-        "w_c_extraction_strategy": "first-function-declaration-block",
+        "w_c_extraction_strategy": EXTRACTION_STRATEGY_DESCRIPTIONS[config.extraction_strategy],
         "w_region_diagnostics": {
             "with_dropped_preamble": sum(
                 record.diagnostics.dropped_preamble_lines > 0 for record in records
@@ -134,7 +178,6 @@ def _initialize_run(
 
 
 def _run_one(args: argparse.Namespace, config: ExperimentConfig, run_dir: Path) -> None:
-    from data.loader import load_records
     from experiments.artifacts import FoldArtifactPaths, write_json
     from experiments.runner import train_fold
     from experiments.splits import assert_group_disjoint, make_outer_splits
@@ -144,7 +187,7 @@ def _run_one(args: argparse.Namespace, config: ExperimentConfig, run_dir: Path) 
     specs = resolve_variants(args.variant)
     if len(specs) != 1:
         raise SystemExit("a single-fold process requires one explicit --variant")
-    records = load_records(config.data_file)
+    records = _load_prepared_records(config)
     splits = make_outer_splits(records, config)
     if not 0 <= args.fold < len(splits):
         raise SystemExit(f"--fold must be between 0 and {len(splits) - 1}")
@@ -166,12 +209,11 @@ def _run_one(args: argparse.Namespace, config: ExperimentConfig, run_dir: Path) 
 
 
 def _run_all(args: argparse.Namespace, config: ExperimentConfig, run_dir: Path) -> None:
-    from data.loader import load_records
     from experiments.artifacts import FoldArtifactPaths
     from experiments.reporting import summarize_run
 
     specs = resolve_variants(args.variant)
-    records = load_records(config.data_file)
+    records = _load_prepared_records(config)
     _initialize_run(run_dir, config, records)
     for fold in range(config.folds):
         for spec in specs:

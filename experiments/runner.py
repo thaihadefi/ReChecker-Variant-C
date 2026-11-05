@@ -86,6 +86,14 @@ def train_fold(
     validation_records = [train_records[index] for index in validation_indices]
     assert_group_disjoint(fit_records, validation_records, "validation split")
 
+    if config.min_token_groups > 1:
+        from representation.pruning import fit_group_vocabulary, prune_vocabulary
+
+        vocabulary = fit_group_vocabulary(fit_records, config.min_token_groups)
+        fit_records = prune_vocabulary(fit_records, vocabulary)
+        validation_records = prune_vocabulary(validation_records, vocabulary)
+        test_records = prune_vocabulary(test_records, vocabulary)
+
     embedding_started = time.perf_counter()
     corpus = [embedding_tokens(record, spec) for record in fit_records]
     embedding_model = fit_embedding(

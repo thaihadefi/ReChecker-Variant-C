@@ -30,6 +30,26 @@ class ConfigTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "early_stop_monitor"):
             ExperimentConfig(early_stop_monitor="val_f1")
 
+    def test_invalid_extraction_strategy_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "extraction_strategy"):
+            ExperimentConfig(extraction_strategy="random")
+
+    def test_non_default_extraction_and_dedup_round_trip(self):
+        original = ExperimentConfig(
+            extraction_strategy="call_flow",
+            dedup=True,
+            abstract_ids=True,
+            min_token_groups=5,
+        )
+        serialized = original.to_dict()
+        self.assertEqual(serialized["extraction_strategy"], "call_flow")
+        self.assertTrue(serialized["dedup"])
+        self.assertEqual(ExperimentConfig.from_dict(serialized), original)
+        cli = original.to_cli_args()
+        self.assertIn("--extraction-strategy", cli)
+        self.assertIn("call_flow", cli)
+        self.assertIn("--dedup", cli)
+
 
 if __name__ == "__main__":
     unittest.main()

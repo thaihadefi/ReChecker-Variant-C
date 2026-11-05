@@ -24,7 +24,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from data.build_dappscan_dataset import _classify, _strip_comments, build_dataset
-from data.extraction import FUNCTION_MARKERS
+from data.extraction import FUNCTION_MARKERS, split_regions
 from data.loader import load_records
 from data.normalization import clean_fragment
 from data.tokenizer import tokenize_line
@@ -123,29 +123,54 @@ def sample_sources(dappscan_root: Path, dataset_file: Path, neg_ratio: float, se
     ]
 
 
-def token_positions(source: str) -> dict[str, dict[int, tuple[int, int]]]:
+def token_positions(
+    source: str,
+    extraction_strategy: str = "first",
+    w_budget: int = 299,
+    c_budget: int = 200,
+) -> dict[str, dict[int, tuple[int, int]]]:
     """Map source line number -> (first, last) token offset in each model input.
 
-    Mirrors parser (blank lines dropped), extraction (W = first function block,
-    C = everything after it, preamble dropped) and normalization/tokenization.
-    Returns offsets for "w", "c" (region-prefix variants) and "flat" (b0).
+    Mirrors parser (blank lines dropped), extraction (W/C strategy) and
+    normalization/tokenization. Returns offsets for "w", "c" (region-prefix
+    variants) and "flat" (b0).
     """
     kept = [
         (number, line.strip())
         for number, line in enumerate(_strip_comments(source).splitlines(), start=1)
         if line.strip()
     ]
-    starts = [
-        index for index, (_, line) in enumerate(kept)
-        if line.split() and line.split()[0] in FUNCTION_MARKERS
-    ]
     positions: dict[str, dict[int, tuple[int, int]]] = {"w": {}, "c": {}, "flat": {}}
-    if not starts:
-        return positions
-    w_end = starts[1] if len(starts) > 1 else len(kept)
-    region_lines = kept[starts[0]:]
+    if extraction_strategy == "first":
+        starts = [
+            index for index, (_, line) in enumerate(kept)
+            if line.split() and line.split()[0] in FUNCTION_MARKERS
+        ]
+        if not starts:
+            return positions
+        w_end = starts[1] if len(starts) > 1 else len(kept)
+        region_lines = kept[starts[0]:]
+        w_size = w_end - starts[0]
+    else:
+        raw_lines = [line for _, line in kept]
+        w_raw, c_raw, _ = split_regions(
+            raw_lines, strategy=extraction_strategy, w_budget=w_budget, c_budget=c_budget
+        )
+        if not w_raw and not c_raw:
+            return positions
+        by_text: dict[str, list[int]] = defaultdict(list)
+        for number, text in kept:
+            by_text[text].append(number)
+        used_counts: dict[str, int] = defaultdict(int)
+        region_lines = []
+        for text in w_raw + c_raw:
+            numbers = by_text.get(text, [0])
+            idx = min(used_counts[text], len(numbers) - 1)
+            used_counts[text] += 1
+            region_lines.append((numbers[idx], text))
+        w_size = len(w_raw)
+
     cleaned = clean_fragment([line for _, line in region_lines])
-    w_size = w_end - starts[0]
     counters = {"w": 0, "c": 0, "flat": 0}
     for offset, ((number, _), text) in enumerate(zip(region_lines, cleaned)):
         count = len(tokenize_line(text))
@@ -158,11 +183,20 @@ def token_positions(source: str) -> dict[str, dict[int, tuple[int, int]]]:
 
 
 def finding_visibility(
-    source: str, findings: list[Finding], max_len: int = 500, w_ratio: float = 0.6
+    source: str,
+    findings: list[Finding],
+    max_len: int = 500,
+    w_ratio: float = 0.6,
+    extraction_strategy: str = "first",
 ) -> dict[str, bool]:
     w_budget = int((max_len - 1) * w_ratio)
     c_budget = max_len - 1 - w_budget
-    positions = token_positions(source)
+    positions = token_positions(
+        source,
+        extraction_strategy=extraction_strategy,
+        w_budget=w_budget,
+        c_budget=c_budget,
+    )
 
     def visible(region: str, budget: int) -> bool:
         return any(

@@ -4,6 +4,7 @@ from tempfile import TemporaryDirectory
 
 import numpy as np
 
+from data.extraction import split_call_anchored_regions, split_call_flow_regions
 from data.loader import load_records
 from data.types import GadgetRecord
 from data.parser import parse_gadgets
@@ -110,6 +111,52 @@ class AblationSequenceTests(unittest.TestCase):
         item = build_sequence(self.record, VARIANTS["b2"], 5, 0.5)
         self.assertEqual(item.tokens, ("w0", "w1", "[SEP]", "c0", "c1"))
         self.assertFalse(VARIANTS["b2"].use_segment_embedding)
+
+
+class CallExtractionStrategyTests(unittest.TestCase):
+    def setUp(self):
+        self.contract_lines = [
+            "pragma solidity ^0.8.0;",
+            "contract Vault {",
+            "mapping(address => uint256) public balances;",
+            "function getBalance(address user) public view returns (uint256) {",
+            "return balances[user];",
+            "}",
+            "function _sendEth(address to, uint256 amount) internal {",
+            "(bool ok, ) = to.call.value(amount)(\"\");",
+            "require(ok);",
+            "}",
+            "function withdraw(uint256 amount) external {",
+            "require(balances[msg.sender] >= amount);",
+            "_sendEth(msg.sender, amount);",
+            "balances[msg.sender] -= amount;",
+            "}",
+            "function setFee(uint256 fee) external {",
+            "}",
+            "}",
+        ]
+
+    def test_call_anchored_skips_Leading_view_getter_and_selects_withdraw(self):
+        w_lines, c_lines, _ = split_call_anchored_regions(self.contract_lines, w_budget=60)
+        self.assertTrue(w_lines[0].startswith("function withdraw"))
+        self.assertTrue(any("getBalance" in line for line in c_lines))
+
+    def test_call_flow_prioritizes_internal_callee_and_state_in_c(self):
+        w_lines, c_lines, _ = split_call_flow_regions(
+            self.contract_lines, w_budget=25, c_budget=200
+        )
+        self.assertTrue(w_lines[0].startswith("function withdraw"))
+        # _sendEth is called by withdraw and makes the low-level call, so it must lead C
+        self.assertTrue(c_lines[0].startswith("function _sendEth"))
+        self.assertTrue(any("balances" in line for line in c_lines))
+
+    def test_group_id_is_invariant_across_extraction_strategies(self):
+        first_recs = load_records("Dataset/reentrancy_1671.txt", extraction_strategy="first")
+        flow_recs = load_records("Dataset/reentrancy_1671.txt", extraction_strategy="call_flow")
+        self.assertEqual(
+            [r.group_id for r in first_recs],
+            [r.group_id for r in flow_recs],
+        )
 
 
 if __name__ == "__main__":
