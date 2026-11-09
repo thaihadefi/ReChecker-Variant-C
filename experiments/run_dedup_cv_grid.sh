@@ -5,7 +5,12 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
-PYTHON="${PYTHON:-.venv/bin/python}"
+if [[ -x .venv/bin/python ]]; then
+  DEFAULT_PYTHON=".venv/bin/python"
+else
+  DEFAULT_PYTHON="python3"
+fi
+PYTHON="${PYTHON:-$DEFAULT_PYTHON}"
 VARIANT="${VARIANT:-all}"
 SEEDS="${SEEDS:-}"
 export TF_NUM_INTRAOP_THREADS="${TF_NUM_INTRAOP_THREADS:-3}"

@@ -195,6 +195,7 @@ test labels/probabilities so distribution analyses need no retraining:
 | `--hidden-units/--dense-units/--dropout/--token-dropout` | Smaller / more regularized model; token dropout zeroes whole token vectors during training |
 | `--extra-train FILE` | Append another gadget file to the training source |
 | `--train-fraction F` | Label-stratified random fraction of training groups (learning curve) |
+| `--extraction-strategy S` | W/C region extraction strategy: `first` (default), `call_anchored`, or `call_flow` |
 | `--test-files name=path,...` | Override the DAppSCAN test sets |
 
 ```bash
@@ -202,8 +203,11 @@ test labels/probabilities so distribution analyses need no retraining:
 python3 -m data.build_dappscan_dataset --dappscan-root /path/to/DAppSCAN --output Dataset/dappscan_reentrancy_pool.txt --neg-ratio 100
 python3 -m data.build_smartbugs_dataset --smartbugs-root /path/to/smartbugs-curated --output Dataset/smartbugs_reentrancy.txt
 
-# Whole grid (settings: experiments/run_generalization_grid.sh --list), then aggregate
-experiments/run_generalization_grid.sh baseline dedup dedup_all dedup_sb
+# 5-fold CV on deduplicated unique contracts across W/C extraction strategies
+experiments/run_dedup_cv_grid.sh dedup_first dedup_call_anchored dedup_call_flow dedup_all_first dedup_all_call_anchored dedup_all_call_flow
+
+# Whole cross-dataset grid (settings: experiments/run_generalization_grid.sh --list), then aggregate
+experiments/run_generalization_grid.sh baseline dedup dedup_all dedup_sb dedup_all_sb dedup_all_call_anchored dedup_all_sb_call_anchored
 PYTHONPATH=. python3 experiments/summarize_generalization.py --reference baseline
 
 # Prevalence sweep + label-free output adjustment on saved probabilities
@@ -221,7 +225,9 @@ Results (5 seeds each, ROC-AUC on the full DAppSCAN pool of 948 gadgets; aggrega
 | `baseline` (original protocol) | 1338 | 53.49% ± 2.18% | 48.64% ± 1.39% |
 | `dedup` | 148 | 47.59% ± 2.34% | 48.02% ± 1.43% |
 | `dedup_all` (dedup + abstract-ids + vocab prune + regularization) | 147 | 52.51% ± 1.34% | **54.80% ± 1.45%** |
+| `dedup_all_call_anchored` (`dedup_all` + Call-Anchored W/C) | 147 | 54.56% ± 2.62% | **54.86% ± 1.66%** |
 | `dedup_all_sb` (`dedup_all` + SmartBugs) | 206 | **58.10% ± 1.10%** | 54.75% ± 0.56% |
+| `dedup_all_sb_call_flow` (`dedup_all_sb` + Call-Flow W/C) | 208 | 55.88% ± 3.06% | 49.07% ± 3.90% |
 | `dedup_all_frac50` (half of the groups) | 73 | 53.36% ± 1.10% | 53.39% ± 2.18% |
 
 - `dedup_all_sb` beats `baseline` for both variants on all three test sets in 5/5 seeds

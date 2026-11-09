@@ -139,7 +139,32 @@ class CallExtractionStrategyTests(unittest.TestCase):
     def test_call_anchored_skips_Leading_view_getter_and_selects_withdraw(self):
         w_lines, c_lines, _ = split_call_anchored_regions(self.contract_lines, w_budget=60)
         self.assertTrue(w_lines[0].startswith("function withdraw"))
+        self.assertFalse(any(line.startswith("function _sendEth") for line in w_lines))
         self.assertTrue(any("getBalance" in line for line in c_lines))
+        self.assertTrue(any("balances" in line for line in c_lines))
+
+    def test_call_anchored_windows_oversized_function_around_call_and_write(self):
+        long_contract = [
+            "pragma solidity ^0.8.0;",
+            "contract LongVault {",
+            "mapping(address => uint256) public balances;",
+            "function withdraw(uint256 amount) external {",
+        ]
+        for i in range(15):
+            long_contract.append(f"uint256 temp{i} = amount + {i};")
+        long_contract.extend([
+            "(bool ok, ) = msg.sender.call.value(amount)(\"\");",
+            "require(ok);",
+            "balances[msg.sender] -= amount;",
+            "}",
+            "}",
+        ])
+        w_lines, _, _ = split_call_anchored_regions(long_contract, w_budget=30)
+        self.assertTrue(w_lines[0].startswith("function withdraw"))
+        # The call and post-call write must be brought near the front of w_lines
+        joined_head = "\n".join(w_lines[:6])
+        self.assertIn("call.value", joined_head)
+        self.assertIn("balances[msg.sender] -= amount", joined_head)
 
     def test_call_flow_prioritizes_internal_callee_and_state_in_c(self):
         w_lines, c_lines, _ = split_call_flow_regions(
@@ -149,6 +174,31 @@ class CallExtractionStrategyTests(unittest.TestCase):
         # _sendEth is called by withdraw and makes the low-level call, so it must lead C
         self.assertTrue(c_lines[0].startswith("function _sendEth"))
         self.assertTrue(any("balances" in line for line in c_lines))
+
+    def test_call_flow_places_shared_state_peer_before_unrelated_functions(self):
+        lines = [
+            "pragma solidity ^0.8.0;",
+            "contract CrossVault {",
+            "mapping(address => uint256) public balances;",
+            "function pingOther(address target) external {",
+            "target.Ping();",
+            "}",
+            "function transfer(address to, uint256 amount) external {",
+            "balances[msg.sender] -= amount;",
+            "balances[to] += amount;",
+            "}",
+            "function withdraw(uint256 amount) external {",
+            "(bool ok, ) = msg.sender.call.value(amount)(\"\");",
+            "require(ok);",
+            "balances[msg.sender] -= amount;",
+            "}",
+            "}",
+        ]
+        w_lines, c_lines, _ = split_call_flow_regions(lines, w_budget=60, c_budget=200)
+        self.assertTrue(w_lines[0].startswith("function withdraw"))
+        # transfer shares `balances` with withdraw, so it must precede unrelated `pingOther` in C
+        c_text = "\n".join(c_lines)
+        self.assertLess(c_text.index("function transfer"), c_text.index("function pingOther"))
 
     def test_group_id_is_invariant_across_extraction_strategies(self):
         first_recs = load_records("Dataset/reentrancy_1671.txt", extraction_strategy="first")

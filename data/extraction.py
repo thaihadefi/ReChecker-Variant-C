@@ -50,7 +50,9 @@ _LOCAL_DECL_RE = re.compile(
 _ASSIGN_OP_RE = re.compile(
     r"(?:(?<![=!<>])=(?!=)|[+\-*/%&|^]=|\+\+|--|\bdelete\s+[A-Za-z_]\w*)"
 )
-_STATE_VAR_DECL_RE = re.compile(r"\b([A-Za-z_]\w*)\s*(?:=\s*[^;]+)?;\s*$")
+_STATE_VAR_DECL_RE = re.compile(
+    r"\b([A-Za-z_]\w*)\s*(?:(?<![=!<>])=(?![=>])\s*[^;]+)?;\s*$"
+)
 _IDENT_RE = re.compile(r"\b([A-Za-z_]\w*)\b")
 
 _SAFE_RECEIVERS = {
@@ -342,7 +344,9 @@ def _parse_solidity_structure(
         stripped = line.strip()
         if not stripped or stripped == "}":
             continue
-        if stripped.startswith(("pragma ", "import ", "using ", "event ")):
+        if stripped.startswith(
+            ("pragma ", "import ", "using ", "event ", "contract ", "library ", "interface ", "abstract ")
+        ):
             continue
         if container_at_line[i] == "interface":
             continue
@@ -517,11 +521,90 @@ def _analyze_and_score_blocks(
         b.score = score
 
 
+def _window_block_lines(block: SolidityBlock, w_budget: int) -> list[str]:
+    """Ensure a long anchor function retains its header, external calls, and post-call writes within w_budget."""
+    if block.token_est <= w_budget or len(block.lines) <= 2:
+        return list(block.lines)
+
+    call_lines = sorted(
+        set(
+            block.direct_low_level_calls
+            + block.direct_high_level_calls
+            + block.direct_member_calls
+        )
+    )
+    if not call_lines:
+        return list(block.lines)
+
+    first_call = max(1, call_lines[0])
+    last_call = max(1, call_lines[-1])
+    post_writes = [idx for idx in block.state_write_lines if idx > first_call]
+    core_start = first_call
+    core_end = max(last_call, min(post_writes) if post_writes else last_call)
+
+    # If standard prefix truncation already covers up to core_end, keep original line order
+    if len(tokenize_lines(block.lines[: core_end + 1])) <= w_budget:
+        return list(block.lines)
+
+    line_tokens = [max(1, len(tokenize_lines([line]))) for line in block.lines]
+    header_tokens = line_tokens[0]
+    win_start = core_start
+    win_end = min(len(block.lines) - 1, max(core_start, core_end))
+    used = header_tokens + sum(line_tokens[win_start : win_end + 1])
+
+    # If the core span itself exceeds w_budget, trim from win_end down toward first_call + first post-write
+    if used > w_budget:
+        essential_end = min(
+            len(block.lines) - 1,
+            min(post_writes) if post_writes else first_call,
+        )
+        win_end = max(win_start, essential_end)
+        used = header_tokens + sum(line_tokens[win_start : win_end + 1])
+
+    # Expand window backward and forward around the call+write core while within w_budget
+    while used < w_budget and (win_start > 1 or win_end < len(block.lines) - 1):
+        progressed = False
+        if win_start > 1 and used + line_tokens[win_start - 1] <= w_budget:
+            win_start -= 1
+            used += line_tokens[win_start]
+            progressed = True
+        if win_end < len(block.lines) - 1 and used + line_tokens[win_end + 1] <= w_budget:
+            win_end += 1
+            used += line_tokens[win_end]
+            progressed = True
+        if not progressed:
+            break
+
+    # Place header + windowed body first so [:w_budget] captures the critical region,
+    # followed by remaining tail lines so no tokens are lost before C.
+    windowed = [block.lines[0]] + block.lines[win_start : win_end + 1]
+    if win_end + 1 < len(block.lines):
+        windowed.extend(block.lines[win_end + 1 :])
+    return windowed
+
+
+def _partition_state_lines(
+    state_lines: Sequence[str], target_vars: set[str]
+) -> tuple[list[str], list[str]]:
+    """Split contract state declarations into lines referenced by target_vars and the rest."""
+    if not state_lines or not target_vars:
+        return [], list(state_lines)
+    matched: list[str] = []
+    unmatched: list[str] = []
+    for line in state_lines:
+        idents = set(_IDENT_RE.findall(line))
+        if idents & target_vars:
+            matched.append(line)
+        else:
+            unmatched.append(line)
+    return matched, unmatched
+
+
 def split_call_anchored_regions(
     lines: Sequence[str],
     w_budget: int = 299,
 ) -> tuple[list[str], list[str], ExtractionDiagnostics]:
-    """Anchor W on the highest-scoring external-call function(s); keep C in contract order."""
+    """Anchor W on the single highest-scoring candidate function; keep C in contract order."""
     blocks, state_lines, first_func_start = _parse_solidity_structure(lines)
     concrete_funcs = [
         b for b in blocks if not b.is_interface and b.kind in ("function", "constructor", "fallback", "receive")
@@ -531,28 +614,23 @@ def split_call_anchored_regions(
 
     _analyze_and_score_blocks(blocks, state_lines)
     ranked = sorted(concrete_funcs, key=lambda b: (-b.score, b.index))
-    if ranked[0].score <= 0:
+    primary = ranked[0]
+    if primary.score <= 0:
         return split_first_function_regions(lines)
 
-    w_indices: set[int] = set()
-    w_lines: list[str] = []
-    used_tokens = 0
-    for cand in ranked:
-        if cand.score <= 0:
-            break
-        if not w_indices or used_tokens + cand.token_est <= w_budget:
-            w_indices.add(cand.index)
-            w_lines.extend(cand.lines)
-            used_tokens += cand.token_est
-        if used_tokens >= w_budget:
-            break
+    w_lines = _window_block_lines(primary, w_budget)
+    matched_state, unmatched_state = _partition_state_lines(
+        state_lines, primary.state_vars_used
+    )
 
     c_lines: list[str] = []
+    if matched_state:
+        c_lines.extend(matched_state)
     for b in blocks:
-        if b.index not in w_indices and not b.is_interface:
+        if b.index != primary.index and not b.is_interface:
             c_lines.extend(b.lines)
-    if not c_lines and state_lines:
-        c_lines.extend(state_lines)
+    if unmatched_state:
+        c_lines.extend(unmatched_state)
 
     return w_lines, c_lines, _build_diagnostics(w_lines, first_func_start)
 
@@ -562,7 +640,7 @@ def split_call_flow_regions(
     w_budget: int = 299,
     c_budget: int = 200,
 ) -> tuple[list[str], list[str], ExtractionDiagnostics]:
-    """Anchor W on top reentrancy-candidate functions (A) and slice C along A <-> B call/state flows."""
+    """Anchor W on the primary candidate function (A) and slice C along A <-> B call/state flows."""
     blocks, state_lines, first_func_start = _parse_solidity_structure(lines)
     concrete_funcs = [
         b for b in blocks if not b.is_interface and b.kind in ("function", "constructor", "fallback", "receive")
@@ -572,60 +650,43 @@ def split_call_flow_regions(
 
     _analyze_and_score_blocks(blocks, state_lines)
     ranked = sorted(concrete_funcs, key=lambda b: (-b.score, b.index))
-    if ranked[0].score <= 0:
+    primary = ranked[0]
+    if primary.score <= 0:
         return split_first_function_regions(lines)
 
-    # 1. Pack W with top-scoring external-call entry functions
-    w_indices: set[int] = set()
-    w_blocks: list[SolidityBlock] = []
-    w_lines: list[str] = []
-    used_w_tokens = 0
-
-    for cand in ranked:
-        if cand.score <= 0:
-            break
-        if not w_indices or used_w_tokens + cand.token_est <= w_budget:
-            w_indices.add(cand.index)
-            w_blocks.append(cand)
-            w_lines.extend(cand.lines)
-            used_w_tokens += cand.token_est
-        if used_w_tokens >= w_budget:
-            break
+    # 1. Anchor W on the single highest-scoring candidate function (windowed if > w_budget)
+    w_lines = _window_block_lines(primary, w_budget)
 
     # 2. Prioritize C by call-flow neighborhood (A -> B callees, callers, modifiers)
     #    and shared state variables (A and B touching the same storage vars).
-    w_callees: set[str] = set()
-    w_callers: set[str] = set()
-    w_state_vars: set[str] = set()
-    for wb in w_blocks:
-        w_callees |= wb.callees
-        w_callers |= wb.callers
-        w_state_vars |= wb.state_vars_used
+    w_callees: set[str] = set(primary.callees)
+    w_callers: set[str] = set(primary.callers)
+    w_state_vars: set[str] = set(primary.state_vars_used)
 
-    # Include 2-hop callees of W
+    # Include 2-hop callees of W and state variables touched by direct callees
     for b in blocks:
-        if b.name in w_callees and not b.is_interface:
+        if b.name in primary.callees and not b.is_interface:
             w_callees |= b.callees
+            w_state_vars |= b.state_vars_used
 
-    c_Direct_flow: list[SolidityBlock] = []
-    c_other_candidates: list[SolidityBlock] = []
+    c_direct_flow: list[SolidityBlock] = []
     c_shared_state: list[SolidityBlock] = []
     c_rest: list[SolidityBlock] = []
 
     for b in blocks:
-        if b.index in w_indices or b.is_interface:
+        if b.index == primary.index or b.is_interface:
             continue
-        if (b.name in w_callees or b.name in w_callers) and not b.is_view_pure:
-            c_Direct_flow.append(b)
-        elif b.score > 0:
-            c_other_candidates.append(b)
+        if (b.name in w_callees or b.name in w_callers) and (
+            not b.is_view_pure or b.score > 0
+        ):
+            c_direct_flow.append(b)
         elif w_state_vars and (b.state_vars_used & w_state_vars) and not b.is_view_pure:
             c_shared_state.append(b)
         else:
             c_rest.append(b)
 
-    # Sort call-flow neighbors and high-score candidates so callback/external-call flows come first
-    c_Direct_flow.sort(
+    # Sort direct call-flow neighbors so external-calling helpers and modifiers come first
+    c_direct_flow.sort(
         key=lambda b: (
             -(1 if b.score > 0 else 0),
             -(1 if b.kind == "modifier" and b.name in w_callees else 0),
@@ -634,28 +695,41 @@ def split_call_flow_regions(
             b.index,
         )
     )
-    c_other_candidates.sort(key=lambda b: (-b.score, b.index))
+    # Sort shared-state functions so functions writing to W's state vars come first
     c_shared_state.sort(
-        key=lambda b: (-len(b.state_vars_used & w_state_vars), -len(b.state_write_lines), b.index)
+        key=lambda b: (
+            -(1 if b.state_write_lines else 0),
+            -len(b.state_vars_used & w_state_vars),
+            -b.score,
+            b.index,
+        )
     )
+
+    matched_state, unmatched_state = _partition_state_lines(state_lines, w_state_vars)
+    prioritized_state = matched_state if matched_state else list(state_lines)
+    trailing_state = unmatched_state if matched_state else []
 
     c_lines: list[str] = []
     used_c_tokens = 0
-    for group in (c_Direct_flow, c_other_candidates, c_shared_state):
-        for b in group:
-            c_lines.extend(b.lines)
-            used_c_tokens += b.token_est
+    for b in c_direct_flow:
+        c_lines.extend(b.lines)
+        used_c_tokens += b.token_est
 
-    # Include state variable declarations before low-priority boilerplate if C budget has room
-    if state_lines and used_c_tokens < c_budget:
-        c_lines.extend(state_lines)
-        used_c_tokens += len(tokenize_lines(state_lines))
+    for b in c_shared_state:
+        c_lines.extend(b.lines)
+        used_c_tokens += b.token_est
 
+    # Place relevant state variable declarations before unrelated functions so they fit in c_budget
+    if prioritized_state:
+        c_lines.extend(prioritized_state)
+        used_c_tokens += len(tokenize_lines(prioritized_state))
+
+    # Keep remaining functions in natural contract order to avoid unnecessary sequence scrambling
     for b in c_rest:
         c_lines.extend(b.lines)
 
-    if state_lines and used_c_tokens >= c_budget and not any(line in c_lines for line in state_lines):
-        c_lines.extend(state_lines)
+    if trailing_state:
+        c_lines.extend(trailing_state)
 
     return w_lines, c_lines, _build_diagnostics(w_lines, first_func_start)
 

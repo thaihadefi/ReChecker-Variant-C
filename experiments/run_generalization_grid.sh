@@ -7,7 +7,12 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
-PYTHON="${PYTHON:-.venv/bin/python}"
+if [[ -x .venv/bin/python ]]; then
+  DEFAULT_PYTHON=".venv/bin/python"
+else
+  DEFAULT_PYTHON="python3"
+fi
+PYTHON="${PYTHON:-$DEFAULT_PYTHON}"
 SEEDS="${SEEDS:-42,1,2,3,4}"
 VARIANTS="${VARIANTS:-b3,b0}"
 # Cap TensorFlow thread pools so several grid processes can share the CPU
@@ -20,7 +25,7 @@ REG="--hidden-units 64 --dense-units 64 --dropout 0.5 --token-dropout 0.2"
 SMARTBUGS="--extra-train Dataset/smartbugs_reentrancy.txt"
 
 ALL="--dedup --abstract-ids --min-token-groups 5 $REG"
-NAMES="baseline dedup dedup_abstract dedup_vocab dedup_reg dedup_all dedup_frac50 dedup_frac75 dedup_sb dedup_all_sb dedup_all_frac50 dedup_all_frac75 dedup_call_anchored dedup_call_flow dedup_all_call_anchored dedup_all_call_flow dedup_all_sb_call_flow"
+NAMES="baseline dedup dedup_abstract dedup_vocab dedup_reg dedup_all dedup_frac50 dedup_frac75 dedup_sb dedup_all_sb dedup_all_frac50 dedup_all_frac75 dedup_call_anchored dedup_call_flow dedup_all_call_anchored dedup_all_call_flow dedup_all_sb_call_anchored dedup_all_sb_call_flow"
 
 # bash 3.2 (macOS default) has no associative arrays.
 setting_args() {
@@ -41,6 +46,7 @@ setting_args() {
     dedup_call_flow) echo "--dedup --extraction-strategy call_flow" ;;
     dedup_all_call_anchored) echo "$ALL --extraction-strategy call_anchored" ;;
     dedup_all_call_flow) echo "$ALL --extraction-strategy call_flow" ;;
+    dedup_all_sb_call_anchored) echo "$ALL $SMARTBUGS --extraction-strategy call_anchored" ;;
     dedup_all_sb_call_flow) echo "$ALL $SMARTBUGS --extraction-strategy call_flow" ;;
     *) return 1 ;;
   esac

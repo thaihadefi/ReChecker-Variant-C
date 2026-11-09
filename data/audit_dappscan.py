@@ -24,7 +24,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from data.build_dappscan_dataset import _classify, _strip_comments, build_dataset
-from data.extraction import FUNCTION_MARKERS, split_regions
+from data.extraction import EXTRACTION_STRATEGIES, FUNCTION_MARKERS, split_regions
 from data.loader import load_records
 from data.normalization import clean_fragment
 from data.tokenizer import tokenize_line
@@ -392,6 +392,7 @@ def compute_call_shortcut_report(
     datasets: dict[str, tuple[Path, bool]] | None = None,
     max_len: int = 500,
     w_ratio: float = 0.6,
+    extraction_strategy: str = "first",
 ) -> dict[str, dict[str, dict[str, int | float]]]:
     """Compute call_shortcut.json across 1671, SmartBugs, and DAppSCAN pool."""
     if datasets is None:
@@ -400,9 +401,19 @@ def compute_call_shortcut_report(
             "smartbugs": (Path("Dataset/smartbugs_reentrancy.txt"), True),
             "dappscan_pool": (Path("Dataset/dappscan_reentrancy_pool.txt"), False),
         }
+    w_budget = int((max_len - 1) * w_ratio)
+    c_budget = max_len - 1 - w_budget
     return {
         name: call_shortcut_stats(
-            load_records(path), dedup=dedup, max_len=max_len, w_ratio=w_ratio
+            load_records(
+                path,
+                extraction_strategy=extraction_strategy,
+                w_budget=w_budget,
+                c_budget=c_budget,
+            ),
+            dedup=dedup,
+            max_len=max_len,
+            w_ratio=w_ratio,
         )
         for name, (path, dedup) in datasets.items()
     }
@@ -433,6 +444,12 @@ def main() -> None:
     parser.add_argument("--audit-seed", type=int, default=2026)
     parser.add_argument("--output-dir", type=Path, default=Path("EXPERIMENT/label-audit"))
     parser.add_argument(
+        "--extraction-strategy",
+        choices=EXTRACTION_STRATEGIES,
+        default="first",
+        help="W/C extraction strategy for visibility and shortcut audits",
+    )
+    parser.add_argument(
         "--summarize-only",
         action="store_true",
         help="summarize existing audit_sample.csv and compute call_shortcut.json without needing --dappscan-root",
@@ -447,7 +464,9 @@ def main() -> None:
         (args.output_dir / "audit_summary.json").write_text(
             json.dumps(summary, indent=2), encoding="utf-8"
         )
-        shortcut = compute_call_shortcut_report()
+        shortcut = compute_call_shortcut_report(
+            extraction_strategy=args.extraction_strategy
+        )
         (args.output_dir / "call_shortcut.json").write_text(
             json.dumps(shortcut, indent=1), encoding="utf-8"
         )
@@ -468,7 +487,11 @@ def main() -> None:
         visibility_rows.append({
             "sample_id": sample_id,
             "findings": len(findings[path]),
-            **finding_visibility(source, locate_findings(source, findings[path])),
+            **finding_visibility(
+                source,
+                locate_findings(source, findings[path]),
+                extraction_strategy=args.extraction_strategy,
+            ),
         })
     totals = {
         key: sum(row[key] for row in visibility_rows)
