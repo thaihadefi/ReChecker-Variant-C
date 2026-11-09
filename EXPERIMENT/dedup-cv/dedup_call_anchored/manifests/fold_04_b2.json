@@ -36,7 +36,7 @@
     "W": 0
   },
   "sequence_policy": "region-prefix",
-  "threshold": 0.26871562004089355,
+  "threshold": 0.3896387219429016,
   "uses_segment_embedding": false,
   "uses_separator": true,
   "variant": "b2",

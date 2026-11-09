@@ -26,7 +26,7 @@
       "dappscan_pool": 0
     },
     "epochs_trained": 7,
-    "training_seconds": 29.170122083000024,
+    "training_seconds": 23.598450417001004,
     "validation": {
       "labels": [
         1,
@@ -4835,7 +4835,7 @@
       "dappscan_pool": 0
     },
     "epochs_trained": 6,
-    "training_seconds": 19.467798624999887,
+    "training_seconds": 20.886213083998882,
     "validation": {
       "labels": [
         0,
@@ -9644,7 +9644,7 @@
       "dappscan_pool": 0
     },
     "epochs_trained": 12,
-    "training_seconds": 89.98350675000074,
+    "training_seconds": 38.13360441599798,
     "validation": {
       "labels": [
         0,
@@ -14453,7 +14453,7 @@
       "dappscan_pool": 0
     },
     "epochs_trained": 7,
-    "training_seconds": 82.79186050000044,
+    "training_seconds": 23.598857917000714,
     "validation": {
       "labels": [
         1,
@@ -19262,7 +19262,7 @@
       "dappscan_pool": 0
     },
     "epochs_trained": 7,
-    "training_seconds": 44.746968583000125,
+    "training_seconds": 23.598674875000142,
     "validation": {
       "labels": [
         0,
@@ -24071,7 +24071,7 @@
       "dappscan_pool": 0
     },
     "epochs_trained": 7,
-    "training_seconds": 35.68534758399983,
+    "training_seconds": 18.6733036250007,
     "validation": {
       "labels": [
         1,
@@ -28880,7 +28880,7 @@
       "dappscan_pool": 0
     },
     "epochs_trained": 6,
-    "training_seconds": 26.68474916700052,
+    "training_seconds": 16.54716974999974,
     "validation": {
       "labels": [
         0,
@@ -33689,7 +33689,7 @@
       "dappscan_pool": 0
     },
     "epochs_trained": 16,
-    "training_seconds": 74.88327454200044,
+    "training_seconds": 38.6112517909969,
     "validation": {
       "labels": [
         0,
@@ -38498,7 +38498,7 @@
       "dappscan_pool": 0
     },
     "epochs_trained": 6,
-    "training_seconds": 29.93229754100048,
+    "training_seconds": 16.492735625000932,
     "validation": {
       "labels": [
         1,
@@ -43307,7 +43307,7 @@
       "dappscan_pool": 0
     },
     "epochs_trained": 7,
-    "training_seconds": 33.19824574999984,
+    "training_seconds": 18.732622083000024,
     "validation": {
       "labels": [
         0,

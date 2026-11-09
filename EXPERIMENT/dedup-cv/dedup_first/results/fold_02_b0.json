@@ -31,14 +31,14 @@
   "outer_train_size": 148,
   "performance": {
     "embedding_bytes": 4420802,
-    "embedding_fit_seconds": 1.2348797089980508,
+    "embedding_fit_seconds": 0.8699582079998436,
     "inference": {
-      "milliseconds_per_sample": 44.73805294597893,
-      "samples_per_second": 22.352336191463163,
-      "seconds": 1.6553079590012203
+      "milliseconds_per_sample": 25.94032432432721,
+      "samples_per_second": 38.55001917081606,
+      "seconds": 0.9597920000001068
     },
-    "model_training_seconds": 123.84819270799926,
-    "peak_rss_mb": 1740.71875,
+    "model_training_seconds": 61.769558666000194,
+    "peak_rss_mb": 1969.359375,
     "weights_bytes": 23863408
   },
   "predictions": [

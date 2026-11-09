@@ -38,7 +38,7 @@
     "W": 0
   },
   "sequence_policy": "flat-prefix",
-  "threshold": 0.4276556968688965,
+  "threshold": 0.4575746953487396,
   "uses_segment_embedding": false,
   "uses_separator": false,
   "variant": "b1",

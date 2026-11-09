@@ -38,7 +38,7 @@
     "W": 0
   },
   "sequence_policy": "region-head-tail",
-  "threshold": 0.46244457364082336,
+  "threshold": 0.45882630348205566,
   "uses_segment_embedding": true,
   "uses_separator": true,
   "variant": "b4",

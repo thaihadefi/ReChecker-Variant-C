@@ -36,15 +36,15 @@
   "outer_test_size": 37,
   "outer_train_size": 148,
   "performance": {
-    "embedding_bytes": 123854720,
-    "embedding_fit_seconds": 5.8804336250032065,
+    "embedding_bytes": 123854721,
+    "embedding_fit_seconds": 3.7500623329997325,
     "inference": {
-      "milliseconds_per_sample": 34.97058783781343,
-      "samples_per_second": 28.59545869339684,
-      "seconds": 1.293911749999097
+      "milliseconds_per_sample": 26.19316102703345,
+      "samples_per_second": 38.177904490714944,
+      "seconds": 0.9691469580002376
     },
-    "model_training_seconds": 116.25029862500378,
-    "peak_rss_mb": 1800.71875,
+    "model_training_seconds": 57.83799587500016,
+    "peak_rss_mb": 2072.984375,
     "weights_bytes": 23888960
   },
   "predictions": [
